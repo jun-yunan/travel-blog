@@ -69,18 +69,23 @@
                 <p>No posts found.</p>
             <?php endif; ?>
             <?php foreach ($data['posts'] as $post): ?>
+                <?php
+                $datetime = $post['published_at'];
+                $date = new DateTime($datetime);
+                $formatted = $date->format("d/m/Y H:i");
+                ?>
                 <div class="w-[70%] flex flex-col border-2 border-gray-300 p-3 gap-y-3 rounded-lg shadow">
                     <div class="flex items-center w-full justify-between">
-                        <p class="text-sm font-medium text-gray-600">Suggested</p>
+                        <p class="text-sm font-medium text-gray-600">Bài viết</p>
                         <div class="flex items-center gap-x-3">
                             <div class="dropdown">
                                 <button class="" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <ion-icon name="ellipsis-vertical"></ion-icon>
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fa-solid fa-bell-slash mr-2"></i> Tắt thông báo</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fa-solid fa-eye-slash mr-2"></i> Ẩn bài viết</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fa-solid fa-flag mr-2"></i>Báo cáo bài viết</a></li>
                                 </ul>
                             </div>
                             <!-- <button class=" hover:bg-gray-300 transition duration-500">
@@ -96,26 +101,26 @@
                             </div>
                             <div class="flex flex-col">
                                 <a class="text-base font-medium text-gray-800 hover:underline cursor-pointer"><?php echo htmlspecialchars($post['full_name']) ?></a>
-                                <p class="text-sm font-normal text-gray-500">2h ago</p>
+                                <p class="text-sm font-normal text-gray-500"><?php echo htmlspecialchars($formatted) ?></p>
                             </div>
                         </div>
                         <div class="flex items-center gap-x-3">
-                            <div class="flex items-center gap-x-1 hover:bg-rose-600 transition duration-500 text-rose-600 hover:text-white border-2 border-rose-600 py-[2px] px-3 cursor-pointer rounded-full">
-                                <i class="fa-regular fa-heart"></i>
-                                <p class="text-sm font-medium ">Favorites</p>
+                            <div class="flex items-center gap-x-1 hover:bg-rose-600 transition duration-500 text-orange-500 hover:text-white border-[1.5px] border-orange-500 py-[2px] px-3 cursor-pointer rounded-full">
+                                <i class="fa-solid fa-bookmark"></i>
+                                <p class="text-sm font-medium">Lưu bài</p>
                             </div>
-                            <div class="flex items-center gap-x-1 hover:bg-sky-600 transition duration-500 text-sky-600 hover:text-white border-2 border-sky-600 py-[2px] px-3 cursor-pointer rounded-full">
+                            <div class="flex items-center gap-x-1 hover:bg-sky-600 transition duration-500 text-sky-600 hover:text-white border-[1.5px] border-sky-600 py-[2px] px-3 cursor-pointer rounded-full">
                                 <i class="fa-solid fa-plus "></i>
-                                <p class="text-sm font-medium ">Follow</p>
+                                <p class="text-sm font-medium ">Theo dõi</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="flex flex-col justify-start gap-y-3">
-                        <a href="/" class="text-lg font-semibold underline text-sky-600"><?php echo htmlspecialchars($post['title']); ?></a>
+                        <a href="/" class="text-lg font-semibold underline text-gray-800 hover:underline hover:text-blue-500 transition-all duration-300"><?php echo htmlspecialchars($post['title']); ?></a>
                         <p class="text-base text-gray-500"><?php echo htmlspecialchars($post['content']); ?></p>
                         <div class="rounded-lg overflow-hidden hover:opacity-75 transition-all cursor-pointer duration-500 hover:scale-105">
-                            <img class="object-cover" src="/assets/images/ha_long_1.jpg" alt="">
+                            <img class="object-cover" src="<?php echo htmlspecialchars($post['featured_image']) ?>" alt="">
                         </div>
                     </div>
 

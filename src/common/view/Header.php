@@ -76,7 +76,7 @@
                             <button type="submit" class="absolute top-0 right-0 bottom-0 px-4 py-2 bg-green-500 text-white rounded-full">
                                 <i class="fa-solid fa-search"></i>
                             </button>
-                            <input type="text" name="q" class="w-[400px] h-[40px] px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus-within:outline-green-500 focus-visible:outline-green-500 focus-within:ring-0" placeholder="Search..." />
+                            <input type="text" name="q" class="w-[400px] h-[40px] px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus-within:outline-green-500 focus-visible:outline-green-500 focus-within:ring-0" placeholder="Tìm kiếm..." />
                         </div>
                     </form>
                 </div>
@@ -88,30 +88,25 @@
                                 <p class=" text-gray-800 text-base font-semibold"><?php echo htmlspecialchars($_SESSION['user']['full_name']) ?></p>
                                 <p class="text-gray-500 text-sm font-light">Phiêu lưu mạo hiểm</p>
                             </div>
-                            <div class="p-2 cursor-pointer hover:bg-gray-300 transition duration-500 rounded-full bg-gray-200">
-                                <img width="42" height="42" src="https://img.icons8.com/parakeet-line/96/user.png" alt="user" />
-                            </div>
+
+                            <img class="w-[56px] h-[56px] border shadow rounded-full hover:opacity-80 cursor-pointer transition-all duration-500" src="/assets/images/placeholder.jpg" alt="user" />
+
                         </div>
 
                         <ul class="dropdown-menu">
-                            <li class="px-2">
-                                <p class="cursor-default font-medium text-sky-600"><?php echo htmlspecialchars($_COOKIE['author']) ?></p>
-                            </li>
-                            <?php if (isset($_COOKIE['role']) && $_COOKIE['role'] == 'admin'): ?>
-                                <li><a class="dropdown-item" href="/user/admin">User Admin</a></li>
+                            <?php if (isset($_SESSION['user']) && $_SESSION['user']['role'] == 'admin'): ?>
+                                <li><a class="dropdown-item" href="/user/admin">Admin</a></li>
                             <?php endif; ?>
-                            <?php if (isset($_COOKIE['role']) && $_COOKIE['role'] == 'admin'): ?>
-                                <li><a class="dropdown-item" href="/blog/admin">Blog Admin</a></li>
-                            <?php endif; ?>
-                            <li><a class="dropdown-item" href="index?route=user/user/profile">Profile</a></li>
-                            <li><a class="dropdown-item" href="index?route=user/user/settings">Settings</a></li>
+
+                            <li><a class="dropdown-item" href="index?route=user/user/profile">Hồ sơ</a></li>
+                            <li><a class="dropdown-item" href="index?route=user/user/settings">Cài đặt</a></li>
                             <li><a class="dropdown-item" href="#">Dark mode</a></li>
                             <div class="dropdown-divider"></div>
                             <li>
                                 <a class="dropdown-item" href="/logout">
                                     <div class="flex items-center gap-x-2">
                                         <i class="fa-solid fa-right-from-bracket text-rose-600"></i>
-                                        <p class="text-rose-600 font-semibold text-base">Logout</p>
+                                        <p class="text-rose-600 font-semibold text-base">Đăng xuất</p>
                                     </div>
                                 </a>
                             </li>
@@ -119,7 +114,7 @@
                     </div>
                 <?php else: ?>
                     <a href="/login">
-                        <button type="button" class="px-6 py-2 text-sm font-semibold border rounded-md border-green-500 text-green-600">Sign In</button>
+                        <button type="button" class="px-6 py-2 text-sm font-semibold border-[2px] hover:bg-green-500 hover:text-white transition-all hover:scale-105 duration-500 rounded-md border-green-500 text-green-600">Đăng Nhập</button>
                     </a>
                 <?php endif; ?>
             </div>

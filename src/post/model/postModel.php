@@ -76,6 +76,8 @@ class PostModel extends Base
             ];
         }
 
+        date_default_timezone_set('Asia/Ho_Chi_Minh');
+
         $slug = $this->createSlug($title);
 
         $published_at = ($status == 'published') ? date('Y-m-d H:i:s') : null;
