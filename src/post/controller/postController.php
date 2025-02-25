@@ -22,6 +22,18 @@ class PostController extends Base
         $this->output->load("post/home",  $data);
     }
 
+    public function schedule(): void
+    {
+        $data = ["title" => "Schedule"];
+        $this->output->load("post/schedule",  $data);
+    }
+
+    public function saved(): void
+    {
+        $data = ["title" => "Saved"];
+        $this->output->load("post/saved",  $data);
+    }
+
     public function create(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
