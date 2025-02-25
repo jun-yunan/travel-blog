@@ -14,7 +14,7 @@ class PostController extends Base
 
     public function home(): void
     {
-        $data = ["title" => "Home"];
+        $data = [];
         $post_model = new PostModel();
 
         $data['posts'] = $post_model->getPosts(10, 0);
@@ -32,6 +32,18 @@ class PostController extends Base
     {
         $data = ["title" => "Saved"];
         $this->output->load("post/saved",  $data);
+    }
+
+    public function search(): void
+    {
+        header('Content-Type: application/json');
+
+        $query = $_GET['q'] ?? '';
+        $post_model = new PostModel();
+        $result = $post_model->search($query, 10);
+
+        echo json_encode($result['status'] === 'success' ? $result['data'] : $result);
+        exit();
     }
 
     public function create(): void

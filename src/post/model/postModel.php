@@ -21,48 +21,59 @@ class PostModel extends Base
 
     public function getPosts($limit = 10, $offset = 0, $status = 'published')
     {
-        // 1. Lấy thông tin cơ bản của bài viết và thông tin người dùng
-        $sql = "SELECT p.*, u.username, u.full_name, u.profile_picture
-                FROM posts p
-                JOIN users u ON p.user_id = u.user_id
-                WHERE p.status = ?
-                ORDER BY p.published_at DESC
-                LIMIT ? OFFSET ?";
+        try {
+            // 1. Lấy thông tin cơ bản của bài viết và thông tin người dùng
+            $sql = "SELECT p.*, u.username, u.full_name, u.profile_picture
+                    FROM posts p
+                    JOIN users u ON p.user_id = u.user_id
+                    WHERE p.status = ?
+                    ORDER BY p.published_at DESC
+                    LIMIT ? OFFSET ?";
+            $posts = $this->database->query($sql, [$status, $limit, $offset]);
 
-        $posts = $this->database->query($sql, [$status, $limit, $offset]);
+            // Kiểm tra và chuẩn hóa $posts
+            if (!$posts || !is_array($posts)) {
+                return [];
+            }
 
-        if (!$posts || empty($posts)) {
+            // 2. Lấy thông tin thẻ và danh mục cho từng bài viết
+            foreach ($posts as &$post) {
+                // Lấy danh sách thẻ
+                $tagSql = "SELECT t.tag_id, t.name, t.slug
+                          FROM tags t
+                          JOIN post_tags pt ON t.tag_id = pt.tag_id
+                          WHERE pt.post_id = ?";
+                $tags = $this->database->query($tagSql, [$post['post_id']]);
+                $post['tags'] = is_array($tags) ? $tags : [];
+
+                // Lấy danh sách danh mục
+                $categorySql = "SELECT c.category_id, c.name, c.slug
+                               FROM categories c
+                               JOIN post_categories pc ON c.category_id = pc.category_id
+                               WHERE pc.post_id = ?";
+                $categories = $this->database->query($categorySql, [$post['post_id']]);
+                $post['categories'] = is_array($categories) ? $categories : [];
+
+                // Lấy số lượng bình luận
+                $commentSql = "SELECT COUNT(*) as comment_count 
+                              FROM comments 
+                              WHERE post_id = ?";
+                $commentCount = $this->database->query($commentSql, [$post['post_id']]);
+                // Xử lý trường hợp $commentCount là scalar hoặc mảng
+                if (is_array($commentCount) && isset($commentCount[0]['comment_count'])) {
+                    $post['comment_count'] = (int)$commentCount[0]['comment_count'];
+                } elseif (is_numeric($commentCount)) {
+                    $post['comment_count'] = (int)$commentCount;
+                } else {
+                    $post['comment_count'] = 0;
+                }
+            }
+
+            return $posts;
+        } catch (\Exception $e) {
+
             return [];
         }
-
-        // 2. Lấy thông tin thẻ và danh mục cho từng bài viết
-        foreach ($posts as &$post) {
-            // Lấy danh sách thẻ
-            $tagSql = "SELECT t.tag_id, t.name, t.slug
-                      FROM tags t
-                      JOIN post_tags pt ON t.tag_id = pt.tag_id
-                      WHERE pt.post_id = ?";
-
-            $post['tags'] = $this->database->query($tagSql, [$post['post_id']]) ?: [];
-
-            // Lấy danh sách danh mục
-            $categorySql = "SELECT c.category_id, c.name, c.slug
-                           FROM categories c
-                           JOIN post_categories pc ON c.category_id = pc.category_id
-                           WHERE pc.post_id = ?";
-
-            $post['categories'] = $this->database->query($categorySql, [$post['post_id']]) ?: [];
-
-            // Lấy số lượng bình luận
-            $commentSql = "SELECT COUNT(*) as comment_count 
-                          FROM comments 
-                          WHERE post_id = ?";
-
-            $commentCount = $this->database->query($commentSql, [$post['post_id']]);
-            $post['comment_count'] = $commentCount ? $commentCount[0]['comment_count'] : 0;
-        }
-
-        return $posts;
     }
 
 
@@ -82,12 +93,14 @@ class PostModel extends Base
 
         $published_at = ($status == 'published') ? date('Y-m-d H:i:s') : null;
 
-        $check = $this->database->query("SELECT * FROM posts WHERE slug = ?", [$slug]);
-        if ($check && !empty($check)) {
-            $slug = $slug . '-' . rand(100, 999);
-        }
 
         try {
+            $check = $this->database->query("SELECT COUNT(*) as count FROM posts WHERE slug = ?", [$slug]);
+            if ($check && isset($check['count']) && $check['count'] > 0) {
+                $slug .= '-' . rand(100, 999);
+            }
+
+
             $sql = "INSERT INTO posts (user_id, title, slug, content, featured_image, published_at, location_id, `status`) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             $post = $this->database->query($sql, [$user_id, $title, $slug, $content, $featured_image, $published_at, $location_id, $status]);
@@ -109,12 +122,11 @@ class PostModel extends Base
                     if (empty($tag_name)) continue;
 
                     $tag_slug = $this->createSlug($tag_name);
-
                     $sql = "SELECT tag_id FROM tags WHERE name = ?";
                     $tag = $this->database->query($sql, [$tag_name]);
 
-                    if ($tag) {
-                        $tag_id = $tag['tag_id'];
+                    if ($tag && is_array($tag) && !empty($tag)) {
+                        $tag_id = $tag[0]['tag_id'];
                     } else {
                         $exist = $this->slugExists($tag_slug);
                         if ($exist) {
@@ -189,5 +201,72 @@ class PostModel extends Base
         $str = preg_replace("/(Ỳ|Ý|Ỵ|Ỷ|Ỹ)/", 'Y', $str);
         $str = preg_replace("/(Đ)/", 'D', $str);
         return $str;
+    }
+
+    public function search($query, $limit = 5)
+    {
+        if (empty($query)) {
+            return [
+                'status' => 'error',
+                'message' => 'Vui lòng nhập từ khóa tìm kiếm.'
+            ];
+        }
+
+        try {
+            // Chuẩn bị từ khóa tìm kiếm
+            $searchTerm = '%' . trim($query) . '%';
+
+            // Truy vấn chính: Tìm kiếm trong title và content
+            $sql = "SELECT p.post_id, p.title, p.slug, p.published_at, p.featured_image, 
+                           u.username, u.full_name, u.profile_picture
+                    FROM posts p
+                    JOIN users u ON p.user_id = u.user_id
+                    WHERE (p.title LIKE ? OR p.content LIKE ?)
+                    AND p.status = 'published'
+                    ORDER BY p.published_at DESC
+                    LIMIT ?";
+            $posts = $this->database->query($sql, [$searchTerm, $searchTerm, $limit]);
+
+            if (!$posts || empty($posts)) {
+                return [
+                    'status' => 'success',
+                    'data' => []
+                ];
+            }
+
+            // Lấy thông tin bổ sung cho từng bài viết
+            foreach ($posts as &$post) {
+                // Lấy danh sách thẻ
+                $tagSql = "SELECT t.tag_id, t.name, t.slug
+                          FROM tags t
+                          JOIN post_tags pt ON t.tag_id = pt.tag_id
+                          WHERE pt.post_id = ?";
+                $post['tags'] = $this->database->query($tagSql, [$post['post_id']]) ?: [];
+
+                // Lấy danh sách danh mục
+                $categorySql = "SELECT c.category_id, c.name, c.slug
+                               FROM categories c
+                               JOIN post_categories pc ON c.category_id = pc.category_id
+                               WHERE pc.post_id = ?";
+                $post['categories'] = $this->database->query($categorySql, [$post['post_id']]) ?: [];
+
+                // Lấy số lượng bình luận
+                $commentSql = "SELECT COUNT(*) as comment_count 
+                              FROM comments 
+                              WHERE post_id = ?";
+                $commentCount = $this->database->query($commentSql, [$post['post_id']]);
+                $post['comment_count'] = $commentCount ? $commentCount[0]['comment_count'] : 0;
+            }
+
+            return [
+                'status' => 'success',
+                'data' => $posts
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi tìm kiếm: ' . $e->getMessage()
+            ];
+        }
     }
 }

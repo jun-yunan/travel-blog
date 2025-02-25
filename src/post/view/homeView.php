@@ -11,18 +11,19 @@
     <main class="flex-1 flex flex-col items-center">
 
         <div class="flex items-center justify-between w-[70%] gap-x-2">
-            <a href="/saved" class="flex-1 shadow-sm <?php echo $active_saved; ?> hover:bg-green-600 hover:text-white hover:scale-105 transition-all duration-500 flex items-center justify-center px-3 py-2 text-base font-medium border rounded-md"><i class="fa-solid fa-bookmark mr-2"></i>Đã lưu</a>
-            <a href="/" class="flex-1 shadow-sm <?php echo $active_home; ?> hover:bg-green-600 hover:text-white hover:scale-105 transition-all duration-500 flex items-center justify-center px-3 py-2 text-base font-medium border rounded-md"><i class="fa-solid fa-house mr-2"></i>Trang chủ</a>
-            <a href="/schedule" class="flex-1 shadow-sm <?php echo $active_schedule; ?> hover:bg-green-600 hover:text-white hover:scale-105 transition-all duration-500 flex items-center justify-center px-3 py-2 text-base font-medium border rounded-md"><i class="fa-solid fa-location-dot mr-2"></i>Lịch trình</a>
+            <a href="/saved" class="flex-1 shadow-sm <?php echo $active_saved; ?> hover:bg-green-600 hover:text-white hover:scale-105 transition-all duration-500 flex items-center justify-center px-3 py-2 text-base font-medium border-[1.5px] border-green-500 text-green-500 rounded-md"><i class="fa-solid fa-bookmark mr-2"></i>Đã lưu</a>
+            <a href="/" class="flex-1 shadow-sm <?php echo $active_home; ?> hover:bg-green-600 hover:text-white hover:scale-105 transition-all duration-500 flex items-center justify-center px-3 py-2 text-base font-medium border-[1.5px] border-green-500 text-green-500 rounded-md"><i class="fa-solid fa-house mr-2"></i>Trang chủ</a>
+            <a href="/schedule" class="flex-1 shadow-sm <?php echo $active_schedule; ?> hover:bg-green-600 hover:text-white hover:scale-105 transition-all duration-500 flex items-center justify-center px-3 py-2 text-base font-medium border-[1.5px] border-green-500 text-green-500 rounded-md"><i class="fa-solid fa-location-dot mr-2"></i>Lịch trình</a>
         </div>
 
-        <div class="my-3 w-[70%] h-[50px] flex flex-col items-center justify-center shadow-sm border rounded-md">Bộ Lọc</div>
+        <!-- <div class="my-3 w-[70%] h-[50px] flex flex-col items-center justify-center shadow-sm border rounded-md">Bộ Lọc</div> -->
 
-        <div class="w-[70%] shadow-sm flex items-center justify-center cursor-pointer">
-            <div class="flex items-center w-full border-2 border-gray-200 px-3 rounded-md overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow">
+        <div class="w-[70%] mt-3 flex items-center gap-x-4 cursor-pointer">
+            <div class="flex items-center w-full border-[1.5px] border-green-500 px-3 rounded-md overflow-hidden hover:scale-105 transition-all duration-500">
                 <ion-icon name="pencil-outline"></ion-icon>
                 <input type="text" readonly placeholder="Chia sẻ trải nghiệm du lịch của bạn ngay nào! 🌍✈️...." class="border-none focus:ring-0 w-full" onclick="openDialog()">
             </div>
+            <button class="px-3 py-2 hover:bg-green-100 hover:text-white transition-all duration-500 hover:scale-105 border-[1.5px] border-green-500 rounded-md"><i class="fa-solid fa-filter text-green-500"></i></button>
         </div>
 
         <!-- Dialog chứa form -->
