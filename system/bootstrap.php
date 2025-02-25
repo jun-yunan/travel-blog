@@ -12,7 +12,7 @@ use Service\Session;
 use Service\Output;
 
 // Composer
-require "system/composer/vendor/autoload.php";
+require __DIR__ . '/composer/vendor/autoload.php';
 
 // Config class
 $config = new Config();
