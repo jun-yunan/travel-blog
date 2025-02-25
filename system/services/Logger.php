@@ -149,7 +149,7 @@ class Logger
 
     // Nếu thư mục logs chưa tồn tại, tạo nó
     if (!is_dir($logDirectory)) {
-        mkdir($logDirectory, 0777, true); // true để tạo thư mục con nếu cần
+        mkdir($logDirectory, 0777, true); // true để tạo thư mục con nếu khong can
     }
 
     // Kiểm tra và tạo file nếu chưa có
