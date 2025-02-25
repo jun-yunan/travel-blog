@@ -5,6 +5,8 @@
     $active_home = $pathname == '/' ? 'bg-green-600 text-white' : '';
     $active_saved = $pathname == '/saved' ? 'bg-green-600 text-white' : '';
     $active_schedule = $pathname == '/schedule' ? 'bg-green-600 text-white' : '';
+    $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
+
     ?>
     <main class="flex-1 flex flex-col items-center">
 
@@ -17,17 +19,56 @@
         <div class="my-3 w-[70%] h-[50px] flex flex-col items-center justify-center border rounded-md">Bộ Lọc</div>
 
         <div class="w-[70%] flex items-center justify-center cursor-pointer">
-            <div class="flex items-center w-full border-2 border-gray-200 px-3 rounded-md overflow-hidden hover:scale-110 transition-all duration-500 hover:shadow">
+            <div class="flex items-center w-full border-2 border-gray-200 px-3 rounded-md overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow">
                 <ion-icon name="pencil-outline"></ion-icon>
-                <input type="text" readonly placeholder="Share your travel adventures and inspire others on our blog! 🌍✈️...." class="border-none focus:ring-0 w-full">
+                <input type="text" readonly placeholder="Chia sẻ trải nghiệm du lịch của bạn ngay nào! 🌍✈️...." class="border-none focus:ring-0 w-full" onclick="openDialog()">
+            </div>
+        </div>
+
+        <!-- Dialog chứa form -->
+        <div id="postDialog" class="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center" onclick="closeDialog()">
+            <div class="bg-white p-6 rounded-lg w-[90%] max-w-md" onclick="event.stopPropagation()">
+                <h2 class="text-xl font-bold mb-4">Tạo bài post du lịch</h2>
+                <form action="/posts/create" method="POST" id="postForm">
+                    <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user['user_id']) ?>">
+                    <div class="mb-2">
+                        <label class="block text-sm font-medium text-gray-700">Tiêu đề</label>
+                        <input type="text" name="title" class="w-full border border-gray-300 rounded-md p-2" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="block text-sm font-medium text-gray-700">Nội dung</label>
+                        <textarea name="content" class="w-full border border-gray-300 rounded-md p-2" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="block text-sm font-medium text-gray-700">Ảnh nổi bật</label>
+                        <input type="file" id="featuredImage" accept="image/*" class="w-full">
+                        <img id="preview" class="mt-2 max-w-xs h-[100px] object-cover hidden" alt="Preview">
+                        <input type="text" name="featured_image" id="selectedImage" class="hidden">
+                    </div>
+                    <div class="mb-2">
+                        <input type="checkbox" id="published" name="status" value="published" class="mr-2">
+                        <label class="text-sm font-medium text-gray-700" for="published">Đăng ngay</label>
+
+                        <input type="checkbox" id="draft" name="status" value="draft" class="mr-2 ml-4">
+                        <label class="text-sm font-medium text-gray-700" for="draft">Lưu nháp</label>
+                    </div>
+                    <div class="mb-2">
+                        <label class="block text-sm font-medium text-gray-700">Tags</label>
+                        <input type="text" name="tags" class="w-full border border-gray-300 rounded-md p-2">
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" onclick="closeDialog()" class="px-4 py-2 mr-2 bg-gray-300 rounded-md">Hủy</button>
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md">Đăng</button>
+                    </div>
+                </form>
             </div>
         </div>
 
         <div class="flex flex-col space-y-6 w-full items-center mt-8">
-            <?php if (empty($blogs)): ?>
-                <p>No blogs found.</p>
+            <?php if (empty($data['posts'])): ?>
+                <p>No posts found.</p>
             <?php endif; ?>
-            <?php foreach ($blogs as $blog): ?>
+            <?php foreach ($data['posts'] as $post): ?>
                 <div class="w-[70%] flex flex-col border-2 border-gray-300 p-3 gap-y-3 rounded-lg shadow">
                     <div class="flex items-center w-full justify-between">
                         <p class="text-sm font-medium text-gray-600">Suggested</p>
@@ -42,19 +83,19 @@
                                     <li><a class="dropdown-item" href="#">Something else here</a></li>
                                 </ul>
                             </div>
-                            <button class=" hover:bg-gray-300 transition duration-500">
+                            <!-- <button class=" hover:bg-gray-300 transition duration-500">
                                 <ion-icon name="close"></ion-icon>
-                            </button>
+                            </button> -->
                         </div>
                     </div>
                     <div class="h-[1px] w-full bg-gray-200"></div>
                     <div class="flex w-full items-center justify-between">
                         <div class="flex items-center gap-x-2">
                             <div class="rounded-full overflow-hidden w-[48px] h-[48px] border">
-                                <img width="48" height="48" src="https://img.icons8.com/parakeet-line/96/user.png" alt="user" />
+                                <img width="48" height="48" src="/assets/images/placeholder.jpg" alt="user" />
                             </div>
                             <div class="flex flex-col">
-                                <a class="text-base font-medium text-gray-800 hover:underline cursor-pointer">Jun Yunan</a>
+                                <a class="text-base font-medium text-gray-800 hover:underline cursor-pointer"><?php echo htmlspecialchars($post['full_name']) ?></a>
                                 <p class="text-sm font-normal text-gray-500">2h ago</p>
                             </div>
                         </div>
@@ -71,8 +112,8 @@
                     </div>
 
                     <div class="flex flex-col justify-start gap-y-3">
-                        <a href="/" class="text-lg font-semibold underline text-sky-600"><?php echo htmlspecialchars($blog['title']); ?></a>
-                        <p class="text-base text-gray-500"><?php echo htmlspecialchars($blog['content']); ?></p>
+                        <a href="/" class="text-lg font-semibold underline text-sky-600"><?php echo htmlspecialchars($post['title']); ?></a>
+                        <p class="text-base text-gray-500"><?php echo htmlspecialchars($post['content']); ?></p>
                         <div class="rounded-lg overflow-hidden hover:opacity-75 transition-all cursor-pointer duration-500 hover:scale-105">
                             <img class="object-cover" src="/assets/images/ha_long_1.jpg" alt="">
                         </div>
@@ -118,4 +159,69 @@
         </div>
     </main>
     <?php include "src/post/view/layouts/friends.php"; ?>
+    <script>
+        document.getElementById('published').addEventListener('change', function() {
+            if (this.checked) {
+                document.getElementById('draft').checked = false;
+            }
+        });
+
+        document.getElementById('draft').addEventListener('change', function() {
+            if (this.checked) {
+                document.getElementById('published').checked = false;
+            }
+        });
+
+        const selectedImage = document.getElementById('selectedImage');
+
+        document.getElementById('featuredImage').addEventListener('change', function(event) {
+            const file = event.target.files[0]; // Lấy file đầu tiên từ input
+            if (file) {
+                const reader = new FileReader();
+
+                // Khi file được đọc xong, chuyển thành Base64
+                reader.onload = function(e) {
+                    const base64String = e.target.result; // Chuỗi Base64
+                    document.getElementById('preview').src = base64String; // Hiển thị ảnh preview
+                    document.getElementById('preview').classList.remove('hidden');
+                    selectedImage.value = base64String;
+                    // Lưu Base64 vào một biến hoặc hidden input nếu cần
+                    console.log(base64String);
+                };
+
+                // Đọc file dưới dạng Data URL (Base64)
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function openDialog() {
+            document.getElementById('postDialog').classList.remove('hidden');
+        }
+
+        function closeDialog() {
+            document.getElementById('postDialog').classList.add('hidden');
+        }
+
+        document.getElementById('postForm').addEventListener('submit', async function(e) {
+            // e.preventDefault();
+            // const formData = new FormData(this);
+            // const postData = {
+            //     title: formData.get('title'),
+            //     content: formData.get('content'),
+            //     category: formData.get('category'),
+            //     tags: formData.get('tags'),
+            //     user_id: formData.get('user_id')
+            // };
+
+            // const response = await fetch('/posts/create', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json'
+            //     },
+            //     body: JSON.stringify(postData)
+            // });
+            // console.log(postData);
+            // closeDialog();
+        });
+    </script>
 </div>

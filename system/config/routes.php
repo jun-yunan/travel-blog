@@ -10,4 +10,5 @@ return [
     "/login" => "user/user/login",
     "/register" => "user/user/register",
     "/logout" => "user/user/logout",
+    "/posts/create" => "post/post/create",
 ];
