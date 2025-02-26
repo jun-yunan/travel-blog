@@ -14,4 +14,5 @@ return [
     "/schedule" => "post/post/schedule",
     "/saved" => "post/post/saved",
     "/posts/search" => "post/post/search",
+    "/posts/view-post" => "post/post/detail",
 ];

@@ -19,11 +19,11 @@
         <!-- <div class="my-3 w-[70%] h-[50px] flex flex-col items-center justify-center shadow-sm border rounded-md">Bộ Lọc</div> -->
 
         <div class="w-[70%] mt-3 flex items-center gap-x-4 cursor-pointer">
-            <div class="flex items-center w-full border-[1.5px] border-green-500 px-3 rounded-md overflow-hidden hover:scale-105 transition-all duration-500">
+            <div class="flex shadow-sm items-center w-full border-[1.5px] border-green-500 px-3 rounded-md overflow-hidden hover:scale-105 transition-all duration-500">
                 <ion-icon name="pencil-outline"></ion-icon>
                 <input type="text" readonly placeholder="Chia sẻ trải nghiệm du lịch của bạn ngay nào! 🌍✈️...." class="border-none focus:ring-0 w-full" onclick="openDialog()">
             </div>
-            <button class="px-3 py-2 hover:bg-green-100 hover:text-white transition-all duration-500 hover:scale-105 border-[1.5px] border-green-500 rounded-md"><i class="fa-solid fa-filter text-green-500"></i></button>
+            <button class="px-3 py-2 shadow-sm hover:bg-green-100 hover:text-white transition-all duration-500 hover:scale-105 border-[1.5px] border-green-500 rounded-md"><i class="fa-solid fa-filter text-green-500"></i></button>
         </div>
 
         <!-- Dialog chứa form -->
@@ -106,7 +106,7 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-x-3">
-                            <div class="flex items-center gap-x-1 hover:bg-rose-600 transition duration-500 text-orange-500 hover:text-white border-[1.5px] border-orange-500 py-[2px] px-3 cursor-pointer rounded-full">
+                            <div class="flex items-center gap-x-1 hover:bg-orange-600 transition duration-500 text-orange-500 hover:text-white border-[1.5px] border-orange-500 py-[2px] px-3 cursor-pointer rounded-full">
                                 <i class="fa-solid fa-bookmark"></i>
                                 <p class="text-sm font-medium">Lưu bài</p>
                             </div>
@@ -118,10 +118,10 @@
                     </div>
 
                     <div class="flex flex-col justify-start gap-y-3">
-                        <a href="/" class="text-lg font-semibold underline text-gray-800 hover:underline hover:text-blue-500 transition-all duration-300"><?php echo htmlspecialchars($post['title']); ?></a>
+                        <a href="/posts/view-post?slug=<?php echo htmlspecialchars($post['slug']) ?>" class="text-lg font-semibold underline text-gray-800 hover:underline hover:text-blue-500 transition-all duration-300"><?php echo htmlspecialchars($post['title']); ?></a>
                         <p class="text-base text-gray-500"><?php echo htmlspecialchars($post['content']); ?></p>
                         <div class="rounded-lg overflow-hidden hover:opacity-75 transition-all cursor-pointer duration-500 hover:scale-105">
-                            <img class="object-cover" src="<?php echo htmlspecialchars($post['featured_image']) ?>" alt="">
+                            <img class="object-cover w-full h-auto" src="<?php echo htmlspecialchars($post['featured_image']) ?>" alt="">
                         </div>
                     </div>
 
@@ -181,21 +181,18 @@
         const selectedImage = document.getElementById('selectedImage');
 
         document.getElementById('featuredImage').addEventListener('change', function(event) {
-            const file = event.target.files[0]; // Lấy file đầu tiên từ input
+            const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
 
-                // Khi file được đọc xong, chuyển thành Base64
                 reader.onload = function(e) {
-                    const base64String = e.target.result; // Chuỗi Base64
-                    document.getElementById('preview').src = base64String; // Hiển thị ảnh preview
+                    const base64String = e.target.result;
+                    document.getElementById('preview').src = base64String;
                     document.getElementById('preview').classList.remove('hidden');
                     selectedImage.value = base64String;
-                    // Lưu Base64 vào một biến hoặc hidden input nếu cần
                     console.log(base64String);
                 };
 
-                // Đọc file dưới dạng Data URL (Base64)
                 reader.readAsDataURL(file);
             }
         });

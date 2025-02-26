@@ -34,6 +34,26 @@ class PostController extends Base
         $this->output->load("post/saved",  $data);
     }
 
+    public function detail(): void
+    {
+        $data = [];
+        if (!isset($_GET['slug'])) {
+            $this->output->load("post/404");
+            return;
+        }
+        $slug = $_GET['slug'] ?? '';
+        $post_model = new PostModel();
+        $post = $post_model->getPostBySlug($slug);
+
+        if ($post['status'] === 'success') {
+            $data = $post['data'];
+
+            $this->output->load("post/detail",  $data);
+        } else {
+            $this->output->load("post/404");
+        }
+    }
+
     public function search(): void
     {
         header('Content-Type: application/json');

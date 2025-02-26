@@ -176,6 +176,54 @@ class PostModel extends Base
         return $string;
     }
 
+    public function getPostBySlug($slug)
+    {
+        try {
+            $sql = "SELECT p.*, u.username, u.full_name, u.profile_picture
+                    FROM posts p
+                    JOIN users u ON p.user_id = u.user_id
+                    WHERE p.slug = ? AND p.status = 'published'
+                    LIMIT 1";
+            $posts = $this->database->query($sql, [$slug]);
+
+            if (!$posts || !is_array($posts) || empty($posts)) {
+                return null;
+            }
+
+            $post = $posts; // Lấy bài viết đầu tiên
+
+            // Lấy tags
+            $tagSql = "SELECT t.tag_id, t.name, t.slug
+                      FROM tags t
+                      JOIN post_tags pt ON t.tag_id = pt.tag_id
+                      WHERE pt.post_id = ?";
+            $tags = $this->database->query($tagSql, [$post['post_id']]);
+            $post['tags'] = is_array($tags) ? $tags : [];
+
+            // Lấy categories
+            $categorySql = "SELECT c.category_id, c.name, c.slug
+                           FROM categories c
+                           JOIN post_categories pc ON c.category_id = pc.category_id
+                           WHERE pc.post_id = ?";
+            $categories = $this->database->query($categorySql, [$post['post_id']]);
+            $post['categories'] = is_array($categories) ? $categories : [];
+
+            // Lấy số lượng bình luận
+            $commentSql = "SELECT COUNT(*) as comment_count 
+                          FROM comments 
+                          WHERE post_id = ?";
+            $commentCount = $this->database->query($commentSql, [$post['post_id']]);
+            $post['comment_count'] = is_array($commentCount) && isset($commentCount[0]['comment_count']) ? (int)$commentCount[0]['comment_count'] : (is_numeric($commentCount) ? (int)$commentCount : 0);
+
+            return [
+                'status' => 'success',
+                'data' => $post
+            ];
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
     // Hàm kiểm tra slug đã tồn tại chưa
     private function slugExists($slug)
     {
