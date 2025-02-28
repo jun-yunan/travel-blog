@@ -16,13 +16,26 @@
                 <p>Hotline: 079425xxxx</p>
             </div>
 
-            <!-- Phương thức thanh toán -->
+            <!-- Kết nối mạng xã hội -->
             <div class="col-md-4">
-                <h6><strong>PHƯƠNG THỨC THANH TOÁN</strong></h6>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <img src="/assets/images/shopeepay.jpg" alt="ShopeePay" width="60" height="40">
-                    <img src="/assets/images/mastercard.jpg" alt="Ngân Hàng" width="40" height="40">
-                    <img src="/assets/images/zalopay.jpg" alt="ZaloPay" width="40" height="40">
+                <h6><strong>KẾT NỐI</strong></h6>
+                <div class="social-icons">
+                    <div class="icon">
+                        <img src="/assets/images/twitter.jpg" alt="Twitter">
+                        <p>Twitter</p>
+                    </div>
+                    <div class="icon">
+                        <img src="/assets/images/facebook.jpg" alt="Facebook">
+                        <p>Facebook</p>
+                    </div>
+                    <div class="icon">
+                        <img src="/assets/images/instagram.jpg" alt="Instagram">
+                        <p>Instagram</p>
+                    </div>
+                    <div class="icon">
+                        <img src="/assets/images/youtube.png" alt="YouTube">
+                        <p>YouTube</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -42,7 +55,7 @@
             <div class="col-md-6">
                 <h6><strong>Thành viên nhóm</strong></h6>
                 <ul style="list-style: none; padding-left: 0;">
-                    <li>217060141 - Nguyễn Nhựt Trường</li>
+                    <li>217060141 - Nguyễn Nhựt Trường (Nhóm Trưởng)</li>
                     <li>217060140 - Thái Trung Nhẫn</li>
                     <li>217060145 - Nguyễn Anh Kiệt</li>
                     <li>217060103 - Lâm Phan Kiều Trinh</li>
@@ -54,3 +67,44 @@
         </div>
     </div>
 </footer>
+
+<style>
+    /* Căn chỉnh icon mạng xã hội */
+    .social-icons {
+        display: flex;
+        gap: 15px;
+        /* Khoảng cách giữa các icon */
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    /* Căn chỉnh từng icon */
+    .icon {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    /* Cỡ chữ và màu của tên mạng xã hội */
+    .icon p {
+        margin-top: 5px;
+        color: white;
+        /* Chữ màu trắng trên nền xanh */
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    /* Kích thước và hiệu ứng khi hover vào icon */
+    .social-icons img {
+        width: 40px;
+        height: 40px;
+        transition: transform 0.3s ease-in-out;
+        border-radius: 5px;
+        /* Bo góc nhẹ cho đẹp */
+    }
+
+    .social-icons img:hover {
+        transform: scale(1.1);
+    }
+</style>
