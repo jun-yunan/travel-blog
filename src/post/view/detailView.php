@@ -45,6 +45,21 @@ $formatted = $date->format("d/m/Y H:i");
             <img class="w-full h-auto object-cover rounded-md hover:opacity-75 transition-all duration-500 cursor-pointer hover:scale-105" src="<?php echo htmlspecialchars($data['featured_image']) ?>" alt="">
         </div>
 
+        <div class="flex mt-[28px] w-full justify-around">
+            <button class="hover:bg-gray-200 transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700">
+                <i class="text-lg fa-regular fa-thumbs-up"></i>
+                <p>Like</p>
+            </button>
+            <button class="hover:bg-gray-200 transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700">
+                <i class="text-lg fa-regular fa-comment"></i>
+                <p>Comment</p>
+            </button>
+            <button class="hover:bg-gray-200 transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700">
+                <i class="text-lg fa-solid fa-share"></i>
+                <p>Share</p>
+            </button>
+        </div>
+
         <div class="w-full h-[1.5px] my-10 bg-gray-400"></div>
 
         <div class="w-full flex gap-x-3">

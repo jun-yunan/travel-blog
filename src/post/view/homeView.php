@@ -149,7 +149,7 @@
                             <i class="text-lg fa-regular fa-thumbs-up"></i>
                             <p>Like</p>
                         </button>
-                        <button class="hover:bg-gray-200 transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700">
+                        <button id="comment_ref" class="hover:bg-gray-200 transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700">
                             <i class="text-lg fa-regular fa-comment"></i>
                             <p>Comment</p>
                         </button>
@@ -159,6 +159,12 @@
                         </button>
                     </div>
 
+                    <!-- Dialog comment -->
+                    <div id="dialog_comment_ref" class="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 hidden items-center justify-center" onclick="closeDialog()">
+                        <div class="bg-white w-[90%] max-w-md" onclick="event.stopPropagation()">
+                            <p>Comment</p>
+                        </div>
+                    </div>
                 </div>
             <?php endforeach; ?>
 
@@ -166,6 +172,13 @@
     </main>
     <?php include "src/post/view/layouts/friends.php"; ?>
     <script>
+        const dialogCommentRef = document.getElementById('dialog_comment_ref');
+
+        document.getElementById('comment_ref').addEventListener('click', function() {
+            dialogCommentRef.classList.remove('hidden');
+            dialogCommentRef.classList.add('flex');
+        });
+
         document.getElementById('published').addEventListener('change', function() {
             if (this.checked) {
                 document.getElementById('draft').checked = false;
@@ -206,25 +219,7 @@
         }
 
         document.getElementById('postForm').addEventListener('submit', async function(e) {
-            // e.preventDefault();
-            // const formData = new FormData(this);
-            // const postData = {
-            //     title: formData.get('title'),
-            //     content: formData.get('content'),
-            //     category: formData.get('category'),
-            //     tags: formData.get('tags'),
-            //     user_id: formData.get('user_id')
-            // };
 
-            // const response = await fetch('/posts/create', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json'
-            //     },
-            //     body: JSON.stringify(postData)
-            // });
-            // console.log(postData);
-            // closeDialog();
         });
     </script>
 </div>
