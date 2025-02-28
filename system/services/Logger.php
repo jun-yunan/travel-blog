@@ -141,25 +141,25 @@ class Logger
      *
      * @param string $file_name path of the log file
      */
-    
-    
-     public function checkLogFile(string $file_name): void
-{
-    $logDirectory = dirname($file_name); // Lấy đường dẫn thư mục chứa file
 
-    // Nếu thư mục logs chưa tồn tại, tạo nó
-    if (!is_dir($logDirectory)) {
-        mkdir($logDirectory, 0777, true); // code moi nek
-    }
 
-    // Kiểm tra và tạo file nếu chưa có
-    if (!file_exists($file_name)) {
-        $fileResource = fopen($file_name, "w");
-        if ($fileResource !== false) {
-            fclose($fileResource);
-        } else {
-            throw new \Exception("Không thể mở hoặc tạo file: $file_name");
+    public function checkLogFile(string $file_name): void
+    {
+        $logDirectory = dirname($file_name); // Lấy đường dẫn thư mục chứa file
+
+        // Nếu thư mục logs chưa tồn tại, tạo nó
+        if (!is_dir($logDirectory)) {
+            mkdir($logDirectory, 0777, true); // true để tạo thư mục con nếu cần
+        }
+
+        // Kiểm tra và tạo file nếu chưa có
+        if (!file_exists($file_name)) {
+            $fileResource = fopen($file_name, "w");
+            if ($fileResource !== false) {
+                fclose($fileResource);
+            } else {
+                throw new \Exception("Không thể mở hoặc tạo file: $file_name");
+            }
         }
     }
-}
 }
