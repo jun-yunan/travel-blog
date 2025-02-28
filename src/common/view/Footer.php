@@ -32,7 +32,7 @@
         <!-- Thông tin nhóm -->
         <div class="row mt-3">
             <div class="col-md-6">
-                <h6><strong>&copy; Nhóm 2.5 Lập trình web với PHP và MySQL</strong></h6>
+                <h6><strong>&copy; Nhóm 2.5 Lập trình Web với PHP và MySQL</strong></h6>
                 <p><strong>Lớp: </strong> Công Nghệ Thông Tin 16B</p>
                 <p><strong>Tên đề tài/dự án: </strong>Blog Travel</p>
                 <p><strong>Điện thoại: </strong>0794251534 (Nhựt Trường)</p>
