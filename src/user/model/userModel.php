@@ -76,24 +76,25 @@ class UserModel extends Base
                 ];
             }
 
-            // Xây dựng câu lệnh UPDATE
-            $sql = "UPDATE users SET full_name = ?, username = ?, email = ?";
-            $params = [$full_name, $username, $email, $user_id];
+            if (isset($profile_picture)) {
+                $sql = "UPDATE users SET full_name = ?, username = ?, email = ?, profile_picture = ? WHERE user_id = ?";
+                $params = [$full_name, $username, $email, $profile_picture, $user_id];
 
-            // Thêm profile_picture nếu có (giả sử là Base64 hoặc đường dẫn)
-            if ($profile_picture) {
-                $sql .= ", profile_picture = ?";
-                $params[] = $profile_picture;
+                $result = $this->database->query($sql, $params);
+
+                return [
+                    'status' => 'success',
+                    'message' => 'Cập nhật hồ sơ thành công!'
+                ];
+            } else {
+                $sql = "UPDATE users SET full_name = ?, username = ?, email = ? WHERE user_id = ?";
+                $params = [$full_name, $username, $email, $user_id];
+                $result = $this->database->query($sql, $params);
+                return [
+                    'status' => 'success',
+                    'message' => 'Cập nhật hồ sơ thành công!'
+                ];
             }
-
-            $sql .= " WHERE user_id = ?";
-            $result = $this->database->query($sql, $params);
-
-
-            return [
-                'status' => 'success',
-                'message' => 'Cập nhật hồ sơ thành công!'
-            ];
         } catch (\Exception $e) {
             return [
                 'status' => 'error',

@@ -106,7 +106,7 @@
                             <p id="bio_ref" class="text-gray-500 text-sm font-light">Phiêu lưu mạo hiểm</p>
                         </div>
 
-                        <img id="profile_picture_ref" class="w-[56px] h-[56px] border shadow rounded-full hover:opacity-80 cursor-pointer transition-all duration-500" src="/assets/images/placeholder.jpg" alt="user" />
+                        <img id="profile_picture_ref" class="w-[56px] h-[56px] object-cover border shadow rounded-full hover:opacity-80 cursor-pointer transition-all duration-500" src="/assets/images/placeholder.jpg" alt="user" />
 
                         <!-- Dropdown menu -->
                         <div class="absolute right-0 mt-2 top-full w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-10">

@@ -565,7 +565,9 @@ class PostModel extends Base
                     WHERE c.post_id = ?
                     ORDER BY c.created_at DESC
                     LIMIT ? OFFSET ?";
-            $comments = $this->database->query($sql, [$post_id, $limit, $offset]);
+            $result = $this->database->query($sql, [$post_id, $limit, $offset]);
+
+            $comments = is_array($result) && !isset($result[0]) ? [$result] : $result;
 
             if (!$comments || !is_array($comments) || empty($comments)) {
                 return [
@@ -574,6 +576,7 @@ class PostModel extends Base
                     'message' => 'Không có bình luận nào.'
                 ];
             }
+
 
             return [
                 'status' => 'success',
