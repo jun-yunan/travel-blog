@@ -1,4 +1,4 @@
-<div class="w-[350px] h-[1500px] border border-black border-opacity-10 rounded-[8px] relative overflow-hidden flex flex-col items-center">
+<div class="w-[350px] h-[1500px] bg-white p-4 border border-black border-opacity-10 rounded-lg overflow-hidden relative flex flex-col space-y-4 shadow-md max-h-[2000px] overflow-y-auto scrollbar-custom">
     <!-- Phần slider sự kiện -->
     <div class="h-[300px] p-[2rem] mt-[0.5rem]">
         <!-- Slider Container -->
@@ -24,13 +24,13 @@
     </div>
 
     <!-- Ô tạo lịch trình -->
-    <div class="w-[300px] h-[50px] flex items-center justify-center border border-black border-opacity-10 rounded-lg mt-2 cursor-pointer hover:bg-[#00A136] transition">
+    <div class="w-[300px] h-[50px] flex items-center justify-center border border-black border-opacity-10 rounded-lg cursor-pointer hover:bg-[#00A136] transition">
         <img src="/assets/images/calendar-icon2.png" alt="Calendar Icon" class="w-6 h-6 mr-2">
         <span class="text-gray-800 font-medium hover:text-white">Tạo lịch trình riêng của bạn</span>
     </div>
 
     <!-- Danh sách bạn bè -->
-    <div class="w-[300px] h-[300px] border border-black border-opacity-10 rounded-lg mt-2 p-4">
+    <div class="w-[300px] h-[300px] border border-black border-opacity-10 rounded-lg p-4">
         <div class="flex items-center space-x-2 mb-3">
             <img src="/assets/images/friends-icon.png" alt="Friends Icon" class="w-6 h-6">
             <h2 class="text-lg font-bold text-gray-900">Danh sách bạn bè</h2>
@@ -82,7 +82,7 @@
     </div>
 
     <!-- Danh sách nhóm -->
-    <div class="w-[300px] h-[300px] border border-black border-opacity-10 rounded-lg mt-2 p-4">
+    <div class="w-[300px] h-[300px] border border-black border-opacity-10 rounded-lg p-4">
         <div class="flex items-center gap-2 mb-3">
             <img src="assets/images/group.png" class="w-6 h-6">
             <p class="text-lg font-semibold">Nhóm của bạn</p>
@@ -162,9 +162,8 @@
     </div>
 
     <!-- Câu chuyện du lịch -->
-    <div class="w-[300px] h-[300px] border border-black border-opacity-10 rounded-lg mt-2 p-4">
+    <div class="w-[300px] h-[300px] border border-black border-opacity-10 rounded-lg p-4">
         <div class="flex items-center gap-2 mb-3">
-
             <p class="text-lg font-semibold">Câu chuyện du lịch</p>
         </div>
         <div class="h-[230px] overflow-y-auto scrollbar-custom space-y-4">
