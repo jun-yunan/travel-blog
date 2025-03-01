@@ -88,7 +88,9 @@ class PostModel extends Base
                     WHERE p.status = ?
                     ORDER BY p.published_at DESC
                     LIMIT ? OFFSET ?";
-            $posts = $this->database->query($sql, [$status, $limit, $offset]);
+            $result = $this->database->query($sql, [$status, $limit, $offset]);
+
+            $posts = is_array($result) && !isset($result[0]) ? [$result] : $result;
 
             // Kiểm tra và chuẩn hóa $posts
             if (!$posts || !is_array($posts)) {
