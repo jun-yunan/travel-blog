@@ -15,4 +15,7 @@ return [
     "/saved" => "post/post/saved",
     "/posts/search" => "post/post/search",
     "/posts/view-post" => "post/post/detail",
+    "/posts/comments/create" => "post/post/create_comment",
+    "/api/comments/create" => "post/post/create_comment",
+    "/api/comments/get" => "post/post/get_comments",
 ];

@@ -176,6 +176,108 @@ class PostModel extends Base
         return $string;
     }
 
+    public function createComment($user_id, $post_id, $content)
+    {
+        try {
+            // Kiểm tra bài post tồn tại và được publish
+            $checkPostSql = "SELECT COUNT(*) as count FROM posts WHERE post_id = ? AND status = 'published'";
+            $post = $this->database->query($checkPostSql, [$post_id]);
+
+            if (!$post || $post['count'] !== 1 || empty($post)) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Bài viết không tồn tại hoặc chưa được công khai.'
+                ];
+            }
+
+            // Kiểm tra user tồn tại
+            $checkUserSql = "SELECT COUNT(*) as count FROM users WHERE user_id = ?";
+            $user = $this->database->query($checkUserSql, [$user_id]);
+
+            if (!$user || $user['count'] !== 1 || empty($user)) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Người dùng không hợp lệ.'
+                ];
+            }
+
+            // Lưu bình luận vào database
+            $sql = "INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)";
+            $comment_id = $this->database->query($sql, [$post_id, $user_id, $content]);
+
+            return [
+                'status' => 'success',
+                'message' => 'Bình luận đã được gửi thành công!',
+                'comment_id' => $comment_id
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi lưu bình luận: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    // public function getComments($post_id, $limit = 5, $offset = 0)
+    // {
+    //     try {
+    //         $sql = "SELECT c.*, u.username, u.full_name
+    //             FROM comments c
+    //             JOIN users u ON c.user_id = u.user_id
+    //             WHERE c.post_id = ?
+    //             ORDER BY c.created_at DESC
+    //             LIMIT ? OFFSET ?";
+    //         $comments = $this->database->query($sql, [$post_id, $limit, $offset]);
+    //         return is_array($comments) ? $comments : [];
+    //     } catch (\Exception $e) {
+    //         return [];
+    //     }
+    // }
+
+    public function getComments($post_id, $limit = 10, $offset = 0)
+    {
+        try {
+            // Kiểm tra bài post tồn tại và được publish
+            $checkPostSql = "SELECT COUNT(*) as count FROM posts WHERE post_id = ? AND status = 'published'";
+            $postCount = $this->database->query($checkPostSql, [$post_id]);
+
+            if (!$postCount  || empty($postCount) || $postCount['count'] == 0) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Bài viết không tồn tại hoặc chưa được công khai.'
+                ];
+            }
+
+            // Lấy danh sách bình luận
+            $sql = "SELECT c.comment_id, c.content, c.created_at, u.user_id, u.username, u.full_name, u.profile_picture
+                    FROM comments c
+                    JOIN users u ON c.user_id = u.user_id
+                    WHERE c.post_id = ?
+                    ORDER BY c.created_at DESC
+                    LIMIT ? OFFSET ?";
+            $comments = $this->database->query($sql, [$post_id, $limit, $offset]);
+
+            if (!$comments || !is_array($comments) || empty($comments)) {
+                return [
+                    'status' => 'success',
+                    'data' => [],
+                    'message' => 'Không có bình luận nào.'
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'data' => $comments,
+                'message' => 'Lấy danh sách bình luận thành công.'
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi lấy bình luận: ' . $e->getMessage()
+            ];
+        }
+    }
+
     public function getPostBySlug($slug)
     {
         try {

@@ -61,7 +61,7 @@
     // }
     // 
     ?>
-    <div class="w-screen">
+    <div class="overflow-x-hidden">
         <header class="fixed z-50 top-0 left-0 right-0 h-[78px] bg-white mb-[78px] shadow-md flex items-center w-full justify-center">
             <div class="w-full flex items-center mx-[150px]">
 
