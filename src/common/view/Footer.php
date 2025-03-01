@@ -18,7 +18,7 @@
 
             <!-- Kết nối mạng xã hội -->
             <div class="col-md-4">
-                <h6><strong>KẾT NỐI</strong></h6>
+                <h6><strong>KẾT NỐI </strong></h6>
                 <div class="social-icons">
                     <div class="icon">
                         <img src="/assets/images/twitter.jpg" alt="Twitter">
