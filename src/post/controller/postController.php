@@ -216,6 +216,109 @@ class PostController extends Base
         exit();
     }
 
+
+    public function toggle_like(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn cần đăng nhập để thích bài viết.'
+            ]);
+            exit();
+        }
+
+        // Đọc dữ liệu JSON từ request body
+        $input = file_get_contents('php://input');
+        $data = json_decode($input, true); // Chuyển JSON thành mảng PHP
+
+        if (!isset($data['post_id']) || !is_numeric($data['post_id'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'ID bài viết không hợp lệ.'
+            ]);
+            exit();
+        }
+
+        $user_id = $_SESSION['user']['user_id'];
+        $post_id = (int)$data['post_id'];
+
+        $post_model = new PostModel();
+
+        try {
+            $result = $post_model->toggleLike($user_id, $post_id);
+
+            if ($result['status'] === 'success') {
+                // Cập nhật số lượt thích
+                $likeCountResult = $post_model->getLikeCount($post_id);
+                $result['like_count'] = $likeCountResult['like_count'];
+                echo json_encode($result);
+            } else {
+                echo json_encode($result);
+            }
+        } catch (\Exception $e) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Lỗi khi xử lý lượt thích: ' . $e->getMessage()
+            ]);
+        }
+        exit();
+    }
+
+
+    public function toggle_share(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn cần đăng nhập để chia sẻ bài viết.'
+            ]);
+            exit();
+        }
+
+        // Đọc dữ liệu JSON từ request body
+        $input = file_get_contents('php://input');
+        $data = json_decode($input, true);
+
+        if (!isset($data['post_id']) || !is_numeric($data['post_id'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'ID bài viết không hợp lệ.'
+            ]);
+            exit();
+        }
+
+        $user_id = $_SESSION['user']['user_id'];
+        $post_id = (int)$data['post_id'];
+
+        $post_model = new PostModel();
+
+        try {
+            $result = $post_model->toggleShare($user_id, $post_id);
+
+            if ($result['status'] === 'success') {
+                // Cập nhật số lượt chia sẻ
+                $shareCountResult = $post_model->getShareCount($post_id);
+                $result['share_count'] = $shareCountResult['share_count'];
+                echo json_encode($result);
+            } else {
+                echo json_encode($result);
+            }
+        } catch (\Exception $e) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Lỗi khi xử lý lượt chia sẻ: ' . $e->getMessage()
+            ]);
+        }
+        exit();
+    }
+
+
     public function get_comments(): void
     {
         header('Content-Type: application/json');

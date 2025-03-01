@@ -19,6 +19,65 @@ class PostModel extends Base
     }
 
 
+    // public function getPosts($limit = 10, $offset = 0, $status = 'published')
+    // {
+    //     try {
+    //         // 1. Lấy thông tin cơ bản của bài viết và thông tin người dùng
+    //         $sql = "SELECT p.*, u.username, u.full_name, u.profile_picture
+    //                 FROM posts p
+    //                 JOIN users u ON p.user_id = u.user_id
+    //                 WHERE p.status = ?
+    //                 ORDER BY p.published_at DESC
+    //                 LIMIT ? OFFSET ?";
+    //         $posts = $this->database->query($sql, [$status, $limit, $offset]);
+
+    //         // Kiểm tra và chuẩn hóa $posts
+    //         if (!$posts || !is_array($posts)) {
+    //             return [];
+    //         }
+
+    //         // 2. Lấy thông tin thẻ và danh mục cho từng bài viết
+    //         foreach ($posts as &$post) {
+    //             // Lấy danh sách thẻ
+    //             $tagSql = "SELECT t.tag_id, t.name, t.slug
+    //                       FROM tags t
+    //                       JOIN post_tags pt ON t.tag_id = pt.tag_id
+    //                       WHERE pt.post_id = ?";
+    //             $tags = $this->database->query($tagSql, [$post['post_id']]);
+    //             $post['tags'] = is_array($tags) ? $tags : [];
+
+    //             // Lấy danh sách danh mục
+    //             $categorySql = "SELECT c.category_id, c.name, c.slug
+    //                            FROM categories c
+    //                            JOIN post_categories pc ON c.category_id = pc.category_id
+    //                            WHERE pc.post_id = ?";
+    //             $categories = $this->database->query($categorySql, [$post['post_id']]);
+    //             $post['categories'] = is_array($categories) ? $categories : [];
+
+    //             // Lấy số lượng bình luận
+    //             $commentSql = "SELECT COUNT(*) as comment_count 
+    //                           FROM comments 
+    //                           WHERE post_id = ?";
+    //             $commentCount = $this->database->query($commentSql, [$post['post_id']]);
+    //             // Xử lý trường hợp $commentCount là scalar hoặc mảng
+
+    //             if (is_array($commentCount) && isset($commentCount['comment_count'])) {
+    //                 $post['comment_count'] = (int)$commentCount['comment_count'];
+    //             } elseif (is_numeric($commentCount)) {
+    //                 $post['comment_count'] = (int)$commentCount;
+    //             } else {
+    //                 $post['comment_count'] = 0;
+    //             }
+    //         }
+
+    //         return $posts;
+    //     } catch (\Exception $e) {
+
+    //         return [];
+    //     }
+    // }
+
+
     public function getPosts($limit = 10, $offset = 0, $status = 'published')
     {
         try {
@@ -36,7 +95,7 @@ class PostModel extends Base
                 return [];
             }
 
-            // 2. Lấy thông tin thẻ và danh mục cho từng bài viết
+            // 2. Lấy thông tin bổ sung cho từng bài viết
             foreach ($posts as &$post) {
                 // Lấy danh sách thẻ
                 $tagSql = "SELECT t.tag_id, t.name, t.slug
@@ -59,20 +118,269 @@ class PostModel extends Base
                               FROM comments 
                               WHERE post_id = ?";
                 $commentCount = $this->database->query($commentSql, [$post['post_id']]);
-                // Xử lý trường hợp $commentCount là scalar hoặc mảng
-                if (is_array($commentCount) && isset($commentCount[0]['comment_count'])) {
-                    $post['comment_count'] = (int)$commentCount[0]['comment_count'];
+
+                // Xử lý $commentCount (sửa lỗi logic)
+                if (is_array($commentCount) && isset($commentCount['comment_count'])) {
+                    $post['comment_count'] = (int)$commentCount['comment_count'];
                 } elseif (is_numeric($commentCount)) {
                     $post['comment_count'] = (int)$commentCount;
                 } else {
                     $post['comment_count'] = 0;
                 }
+
+                // Lấy số lượt thích
+                $likeCountResult = $this->getLikeCount($post['post_id']);
+                $post['like_count'] = $likeCountResult['like_count'];
+
+                // Kiểm tra xem user đã thích bài viết này chưa
+                $isLikedResult = $this->isLikedByUser($post['user_id'], $post['post_id']);
+                $post['liked'] = $isLikedResult['liked'];
+
+                $likeCountShared = $this->getShareCount($post['post_id']);
+                $post['share_count'] = $likeCountShared['share_count'];
             }
 
             return $posts;
         } catch (\Exception $e) {
-
+            // Log lỗi nếu cần
+            // $this->console->log($e->getMessage());
             return [];
+        }
+    }
+
+
+
+    public function toggleLike($user_id, $post_id)
+    {
+        try {
+            // Kiểm tra bài post tồn tại và được publish
+            $checkPostSql = "SELECT COUNT(*) as count FROM posts WHERE post_id = ? AND status = 'published'";
+            $postCount = $this->database->query($checkPostSql, [$post_id]);
+
+            if (!$postCount || !is_array($postCount) || empty($postCount) || $postCount['count'] == 0) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Bài viết không tồn tại hoặc chưa được công khai.'
+                ];
+            }
+
+            // Kiểm tra user tồn tại
+            $checkUserSql = "SELECT COUNT(*) as count FROM users WHERE user_id = ?";
+            $userCount = $this->database->query($checkUserSql, [$user_id]);
+
+            if (!$userCount || !is_array($userCount) || empty($userCount) || $userCount['count'] == 0) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Người dùng không hợp lệ.'
+                ];
+            }
+
+            // Kiểm tra xem user đã thích bài post này chưa
+            $checkLikeSql = "SELECT COUNT(*) as count FROM post_likes WHERE user_id = ? AND post_id = ?";
+            $likeCount = $this->database->query($checkLikeSql, [$user_id, $post_id]);
+
+            if (!$likeCount || !is_array($likeCount) || empty($likeCount)) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Không thể kiểm tra lượt thích.'
+                ];
+            }
+
+            if ($likeCount['count'] > 0) {
+                // Nếu đã thích, xóa lượt thích
+                $deleteSql = "DELETE FROM post_likes WHERE user_id = ? AND post_id = ?";
+                $this->database->query($deleteSql, [$user_id, $post_id]);
+                return [
+                    'status' => 'success',
+                    'message' => 'Đã bỏ thích bài viết.',
+                    'liked' => false
+                ];
+            } else {
+                // Nếu chưa thích, thêm lượt thích
+                $insertSql = "INSERT INTO post_likes (user_id, post_id) VALUES (?, ?)";
+                $this->database->query($insertSql, [$user_id, $post_id]);
+                return [
+                    'status' => 'success',
+                    'message' => 'Đã thích bài viết.',
+                    'liked' => true
+                ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi xử lý lượt thích: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    public function getLikeCount($post_id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as like_count FROM post_likes WHERE post_id = ?";
+            $result = $this->database->query($sql, [$post_id]);
+
+            if (!$result || !is_array($result) || empty($result)) {
+                return [
+                    'status' => 'success',
+                    'like_count' => 0
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'like_count' => (int)$result['like_count']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi lấy số lượt thích: ' . $e->getMessage(),
+                'like_count' => 0
+            ];
+        }
+    }
+
+
+    public function isLikedByUser($user_id, $post_id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as count FROM post_likes WHERE user_id = ? AND post_id = ?";
+            $result = $this->database->query($sql, [$user_id, $post_id]);
+
+            if (!$result || !is_array($result) || empty($result)) {
+                return [
+                    'status' => 'success',
+                    'liked' => false
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'liked' => $result['count'] > 0
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi kiểm tra lượt thích: ' . $e->getMessage(),
+                'liked' => false
+            ];
+        }
+    }
+
+
+    public function toggleShare($user_id, $post_id)
+    {
+        try {
+            // Kiểm tra bài post tồn tại và được publish
+            $checkPostSql = "SELECT COUNT(*) as count FROM posts WHERE post_id = ? AND status = 'published'";
+            $postCount = $this->database->query($checkPostSql, [$post_id]);
+
+            if (!$postCount || !is_array($postCount) || empty($postCount) || $postCount['count'] == 0) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Bài viết không tồn tại hoặc chưa được công khai.'
+                ];
+            }
+
+            // Kiểm tra user tồn tại
+            $checkUserSql = "SELECT COUNT(*) as count FROM users WHERE user_id = ?";
+            $userCount = $this->database->query($checkUserSql, [$user_id]);
+
+            if (!$userCount || !is_array($userCount) || empty($userCount) || $userCount['count'] == 0) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Người dùng không hợp lệ.'
+                ];
+            }
+
+            // Kiểm tra xem user đã share bài post này chưa
+            $checkShareSql = "SELECT COUNT(*) as count FROM post_shares WHERE user_id = ? AND post_id = ?";
+            $shareCount = $this->database->query($checkShareSql, [$user_id, $post_id]);
+
+            if (!$shareCount || !is_array($shareCount) || empty($shareCount)) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Không thể kiểm tra lượt chia sẻ.'
+                ];
+            }
+
+            if ($shareCount['count'] > 0) {
+                // Nếu đã share, xóa lượt share (nếu muốn cho phép bỏ share)
+                $deleteSql = "DELETE FROM post_shares WHERE user_id = ? AND post_id = ?";
+                $this->database->query($deleteSql, [$user_id, $post_id]);
+                return [
+                    'status' => 'success',
+                    'message' => 'Đã bỏ chia sẻ bài viết.',
+                    'shared' => false
+                ];
+            } else {
+                // Nếu chưa share, thêm lượt share
+                $insertSql = "INSERT INTO post_shares (user_id, post_id) VALUES (?, ?)";
+                $this->database->query($insertSql, [$user_id, $post_id]);
+                return [
+                    'status' => 'success',
+                    'message' => 'Đã chia sẻ bài viết.',
+                    'shared' => true
+                ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi xử lý lượt chia sẻ: ' . $e->getMessage()
+            ];
+        }
+    }
+
+
+    public function getShareCount($post_id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as share_count FROM post_shares WHERE post_id = ?";
+            $result = $this->database->query($sql, [$post_id]);
+
+            if (!$result || !is_array($result) || empty($result)) {
+                return [
+                    'status' => 'success',
+                    'share_count' => 0
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'share_count' => (int)$result['share_count']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi lấy số lượt chia sẻ: ' . $e->getMessage(),
+                'share_count' => 0
+            ];
+        }
+    }
+
+
+    public function isSharedByUser($user_id, $post_id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as count FROM post_shares WHERE user_id = ? AND post_id = ?";
+            $result = $this->database->query($sql, [$user_id, $post_id]);
+
+            if (!$result || !is_array($result) || empty($result)) {
+                return [
+                    'status' => 'success',
+                    'shared' => false
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'shared' => $result['count'] > 0
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi kiểm tra lượt chia sẻ: ' . $e->getMessage(),
+                'shared' => false
+            ];
         }
     }
 

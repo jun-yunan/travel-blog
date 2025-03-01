@@ -18,4 +18,6 @@ return [
     "/posts/comments/create" => "post/post/create_comment",
     "/api/comments/create" => "post/post/create_comment",
     "/api/comments/get" => "post/post/get_comments",
+    "/api/toggle-like" => "post/post/toggle_like",
+    "/api/toggle-share" => "post/post/toggle_share",
 ];
