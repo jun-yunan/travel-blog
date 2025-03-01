@@ -50,7 +50,7 @@
                     </h3>
                     <p class="text-gray-600 mt-2"><?php echo htmlspecialchars(substr($post['content'], 0, 100)) . (strlen($post['content']) > 100 ? '...' : ''); ?></p>
                     <?php if (!empty($post['featured_image'])): ?>
-                        <img src="<?php echo htmlspecialchars($post['featured_image']); ?>" alt="Featured Image" class="mt-2 w-full h-48 object-cover rounded-md">
+                        <img src="<?php echo htmlspecialchars($post['featured_image']); ?>" alt="Featured Image" class="mt-2 w-full h-auto object-cover rounded-md">
                     <?php endif; ?>
                     <div class="mt-4 text-gray-500 flex items-center gap-4">
                         <span><i class="fa-regular fa-thumbs-up"></i> <?php echo $post['like_count']; ?></span>

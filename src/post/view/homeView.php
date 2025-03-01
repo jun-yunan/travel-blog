@@ -75,7 +75,7 @@
                 $date = new DateTime($datetime);
                 $formatted = $date->format("d/m/Y H:i");
                 ?>
-                <div class="w-[70%] flex flex-col border-2 border-gray-300 p-3 gap-y-3 rounded-lg shadow-sm">
+                <div class="w-[70%] flex flex-col border-[1.5px] border-green-500  p-3 gap-y-3 rounded-lg shadow-sm">
                     <div class="flex items-center w-full justify-between">
                         <p class="text-sm font-medium text-gray-600">Bài viết</p>
                         <div class="flex items-center gap-x-3">
@@ -106,7 +106,7 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-x-3">
-                            <div class="flex items-center gap-x-1 hover:bg-orange-600 transition duration-500 text-orange-500 hover:text-white border-[1.5px] border-orange-500 py-[2px] px-3 cursor-pointer rounded-full">
+                            <div class="flex items-center gap-x-1 hover:bg-green-600 transition duration-500 text-green-500 hover:text-white border-[1.5px] border-green-500 py-[2px] px-3 cursor-pointer rounded-full">
                                 <i class="fa-solid fa-bookmark"></i>
                                 <p class="text-sm font-medium">Lưu bài</p>
                             </div>
@@ -118,7 +118,7 @@
                     </div>
 
                     <div class="flex flex-col justify-start gap-y-3">
-                        <a href="/posts/view-post?slug=<?php echo htmlspecialchars($post['slug']); ?>" class="text-lg font-semibold underline text-gray-800 hover:underline hover:text-blue-500 transition-all duration-300"><?php echo htmlspecialchars($post['title']); ?></a>
+                        <a href="/posts/view-post?slug=<?php echo htmlspecialchars($post['slug']); ?>" class="text-lg font-semibold  text-gray-800 hover:underline hover:text-blue-500"><?php echo htmlspecialchars($post['title']); ?></a>
                         <p class="text-base text-gray-500"><?php echo htmlspecialchars($post['content']); ?></p>
                         <div class="rounded-lg overflow-hidden hover:opacity-75 transition-all cursor-pointer duration-500 hover:scale-105">
                             <img class="object-cover w-full h-auto" src="<?php echo htmlspecialchars($post['featured_image']); ?>" alt="">
