@@ -1,4 +1,4 @@
-<footer style="background-color: #0057b8; color: white; padding: 40px 0;">
+<footer style="background-color: #10B981; color: white; padding: 40px 0;">
     <div class="container">
         <div class="row">
             <!-- Thông tin liên hệ -->
@@ -44,7 +44,7 @@
 
         <!-- Thông tin nhóm -->
         <div class="row mt-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <h6><strong>&copy; Nhóm 2.5 Lập trình Web với PHP và MySQL</strong></h6>
                 <p><strong>Lớp: </strong> Công Nghệ Thông Tin 16B</p>
                 <p><strong>Tên đề tài/dự án: </strong>Blog Travel</p>
@@ -52,7 +52,7 @@
                 <p><strong>Email:</strong> nntruong-cntt16@tdu.edu.vn</p>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <h6><strong>Thành viên nhóm</strong></h6>
                 <ul style="list-style: none; padding-left: 0;">
                     <li>217060141 - Nguyễn Nhựt Trường (Nhóm Trưởng)</li>
@@ -64,6 +64,12 @@
                     <li>217060146 - Tăng Thị Thuý Huỳnh</li>
                 </ul>
             </div>
+
+            <div class="col-md-4">
+                <img src="/assets/images/quangcaofooter.png" width="420px" height="420px">
+            </div>
+
+
         </div>
     </div>
 </footer>
