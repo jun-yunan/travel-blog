@@ -168,7 +168,7 @@
         </div>
         <div class="h-[230px] overflow-y-auto scrollbar-custom space-y-4">
             <div class="flex items-start gap-3">
-                <img src="assets/images/travel1.jpg" class="w-12 h-12 rounded-md object-cover">
+                <img src="assets/images/travel1.jpeg" class="w-12 h-12 rounded-md object-cover">
                 <div>
                     <p class="font-semibold text-black">Hành trình lên Fansipan</p>
                     <p class="text-gray-600 text-sm line-clamp-2">Chinh phục nóc nhà Đông Dương với sương mù và cảnh đẹp tuyệt vời trong 3 ngày 2 đêm.</p>
