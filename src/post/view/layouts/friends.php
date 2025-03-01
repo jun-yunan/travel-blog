@@ -320,7 +320,7 @@
 
         updateHotPlaceBanner(currentIndex);
 
-        // Gợi ý lịch trình - Xử lý nút "Xem thêm"
+        // Gợi ý lịch trình
         const itineraryList = document.getElementById('itinerary-list');
         const toggleItineraryBtn = document.getElementById('toggle-itinerary');
         let isExpanded = false;
