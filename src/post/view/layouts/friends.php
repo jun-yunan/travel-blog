@@ -270,7 +270,7 @@
                 { name: "Hà Nội", views: 7200, image: "https://i.pinimg.com/550x/c7/cc/7b/c7cc7bcf0a40c73bb658690e45aef7ef.jpg", url: "https://hanoi.vn" },
                 { name: "Hà Giang", views: 5200, image: "https://dulichchat.com/wp-content/uploads/2019/12/kinh-nghiem-du-lich-ha-giang-tu-tuc-dulichchat-780x405.jpg", url: "https://hagiang.vn" },
                 { name: "Phú Quốc", views: 15000, image: "https://file.hstatic.net/200000504041/file/phu-quoc-joys-holiday-hon-mong-tay_7aa61984a61649338e6c7bb83459bd3f_grande.jpeg", url: "https://phuquoc.vn" },
-                { name: "Hội An", views: 6000, image: "https://bizweb.dktcdn.net/100/349/716/files/pho-co-hoi-an-1-1.png?v=1727928153980", url: "https://hoian.vn" }
+                { name: "Hội An", views: 8700, image: "https://bizweb.dktcdn.net/100/349/716/files/pho-co-hoi-an-1-1.png?v=1727928153980", url: "https://hoian.vn" }
             ]
         };
 
