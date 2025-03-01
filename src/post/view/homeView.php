@@ -118,51 +118,110 @@
                     </div>
 
                     <div class="flex flex-col justify-start gap-y-3">
-                        <a href="/posts/view-post?slug=<?php echo htmlspecialchars($post['slug']) ?>" class="text-lg font-semibold underline text-gray-800 hover:underline hover:text-blue-500 transition-all duration-300"><?php echo htmlspecialchars($post['title']); ?></a>
+                        <a href="/posts/view-post?slug=<?php echo htmlspecialchars($post['slug']); ?>" class="text-lg font-semibold underline text-gray-800 hover:underline hover:text-blue-500 transition-all duration-300"><?php echo htmlspecialchars($post['title']); ?></a>
                         <p class="text-base text-gray-500"><?php echo htmlspecialchars($post['content']); ?></p>
                         <div class="rounded-lg overflow-hidden hover:opacity-75 transition-all cursor-pointer duration-500 hover:scale-105">
-                            <img class="object-cover w-full h-auto" src="<?php echo htmlspecialchars($post['featured_image']) ?>" alt="">
+                            <img class="object-cover w-full h-auto" src="<?php echo htmlspecialchars($post['featured_image']); ?>" alt="">
                         </div>
                     </div>
 
                     <div class="w-full flex items-center justify-between">
                         <a href="/" class="flex hover:underline hover:text-blue-600 text-sm font-medium text-gray-700 items-center gap-x-1">
                             <i class="fa-regular fa-thumbs-up"></i>
-                            <p class="">39</p>
+                            <p id="like_count_ref_<?php echo $post['post_id']; ?>" data-post-id="<?php echo $post['post_id']; ?> "><?php echo htmlspecialchars($post['like_count']) ?></p>
                         </a>
-                        <div class="flex items-center gap-x-3">
+                        <div class=" flex items-center gap-x-3">
                             <a href="/" class="flex hover:underline hover:text-blue-600 text-sm font-medium text-gray-700 items-center gap-x-1">
                                 <i class="fa-regular fa-comment"></i>
-                                <p class="">12</p>
+                                <p class=""><?php echo htmlspecialchars($post['comment_count']) ?></p>
                             </a>
                             <a href="/" class="flex hover:underline hover:text-blue-600 text-sm font-medium text-gray-700 items-center gap-x-1">
                                 <i class="fa-solid fa-share"></i>
-                                <p class="">5</p>
+                                <p id="share_count_ref_<?php echo $post['post_id']; ?>" data-post-id="<?php echo $post['post_id']; ?>" class=""><?php echo htmlspecialchars($post['share_count']); ?></p>
                             </a>
+
                         </div>
                     </div>
 
-                    <div class="h-[1px] w-full bg-gray-200"></div>
+                    <div class=" h-[1px] w-full bg-gray-200">
+                    </div>
 
                     <div class="flex w-full justify-around">
-                        <button class="hover:bg-gray-200 transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700">
+                        <?php
+                        $isUserLiked = $post['liked'] > 0 ? 'text-blue-600' : '';
+                        $postUrl = "http://travel-blog/posts/" . $post['slug'] . "?id=" . $post['post_id'];
+
+                        ?>
+
+                        <button id="like_<?php echo $post['post_id']; ?>" class="hover:bg-gray-200 <?php echo $isUserLiked; ?> transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700 like-btn" data-post-id="<?php echo $post['post_id']; ?>">
                             <i class="text-lg fa-regular fa-thumbs-up"></i>
-                            <p>Like</p>
+                            <!-- <span id="like_count_<?php echo $post['post_id']; ?>"><?php echo $post['like_count'] ?? 0; ?></span> -->
+                            <span id="like_count_<?php echo $post['post_id']; ?>">Thích</span>
                         </button>
-                        <button id="comment_ref" class="hover:bg-gray-200 transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700">
+                        <button id="comment_<?php echo $post['post_id']; ?>" class="hover:bg-gray-200  transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700 comment-btn" data-post-id="<?php echo $post['post_id']; ?>">
                             <i class="text-lg fa-regular fa-comment"></i>
-                            <p>Comment</p>
+                            <p>Bình luận</p>
                         </button>
-                        <button class="hover:bg-gray-200 transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700">
+                        <!-- <button class="hover:bg-gray-200 transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700">
+                        <i class="text-lg fa-solid fa-share"></i>
+                        <p>Share</p>
+                    </button> -->
+
+                        <!-- <button id="share_<?php echo $post['post_id']; ?>" class="hover:bg-gray-200 transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700 share-btn" data-post-url="<?php echo $postUrl; ?>" data-post-id="<?php echo $post['post_id']; ?>">
+                        <i class="text-lg fa-solid fa-share"></i>
+                        <p>Share</p>
+                    </button> -->
+
+                        <button id="share_<?php echo $post['post_id']; ?>" class="hover:bg-gray-200 transition duration-300 py-1 px-3 rounded-full flex items-center gap-x-2 text-base font-medium text-gray-700 share-btn" data-post-url="<?php echo $postUrl ?>" data-post-id="<?php echo $post['post_id']; ?>">
                             <i class="text-lg fa-solid fa-share"></i>
-                            <p>Share</p>
+                            <!-- <span id="share_count_<?php echo $post['post_id']; ?>"><?php echo $post['share_count'] ?? 0; ?></span> -->
+                            <span id="share_count_<?php echo $post['post_id']; ?>">Chia sẻ</span>
                         </button>
                     </div>
 
-                    <!-- Dialog comment -->
-                    <div id="dialog_comment_ref" class="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 hidden items-center justify-center" onclick="closeDialog()">
-                        <div class="bg-white w-[90%] max-w-md" onclick="event.stopPropagation()">
-                            <p>Comment</p>
+                    <div id="dialog_share_<?php echo $post['post_id']; ?>" class="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 hidden items-center justify-center" onclick="closeShareDialog(<?php echo $post['post_id']; ?>)">
+                        <div class="bg-white p-6 rounded-lg w-[90%] max-w-2xl" onclick="event.stopPropagation()">
+                            <h2 class="text-xl font-bold mb-4">Chia sẻ bài viết</h2>
+                            <div class="space-y-4">
+                                <div class="flex w-full items-center gap-x-2">
+                                    <input id="postLink_<?php echo $post['post_id']; ?>" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-md" value="<?php echo $postUrl; ?>" readonly>
+                                    <button onclick="copyLink(<?php echo $post['post_id']; ?>)" class="px-4 py-2.5 min-w-[150px] justify-center bg-green-500 text-white rounded-md text-sm font-medium flex items-center">
+                                        <i class="fa-solid fa-copy mr-2"></i>
+                                        <p>Sao chép</p>
+                                    </button>
+                                </div>
+                                <div class="flex items-center gap-x-3">
+                                    <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode($postUrl); ?>" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center gap-2" onclick="handleShare(<?php echo $post['post_id']; ?>, 'facebook')">
+                                        <i class="fab fa-facebook-f"></i> Facebook
+                                    </a>
+                                    <a href="https://twitter.com/intent/tweet?url=<?php echo urlencode($postUrl); ?>&text=<?php echo urlencode($post['title']); ?>" target="_blank" class="px-4 py-2 bg-blue-200 text-white rounded-md flex items-center gap-2" onclick="handleShare(<?php echo $post['post_id']; ?>, 'twitter')">
+                                        <i class="fab fa-twitter"></i> Twitter
+                                    </a>
+                                    <a href="https://www.instagram.com/?url=<?php echo urlencode($postUrl); ?>" target="_blank" class="px-4 py-2 bg-pink-600 text-white rounded-md flex items-center gap-2" onclick="handleShare(<?php echo $post['post_id']; ?>, 'instagram')">
+                                        <i class="fab fa-instagram"></i> Instagram
+                                    </a>
+                                </div>
+                            </div>
+                            <button onclick="closeShareDialog(<?php echo $post['post_id']; ?>)" class="mt-4 px-4 py-2 bg-gray-300 rounded-md">Đóng</button>
+                        </div>
+                    </div>
+
+
+                    <div id="dialog_comment_<?php echo $post['post_id']; ?>" class="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 hidden items-center justify-center" onclick="closeCommentDialog(<?php echo $post['post_id']; ?>)">
+                        <div class="bg-white p-6 rounded-lg w-[90%] max-w-md" onclick="event.stopPropagation()">
+                            <h2 class="text-xl font-bold mb-4">Bình luận cho bài viết: <?php echo htmlspecialchars($post['title']); ?></h2>
+                            <div id="commentList_<?php echo $post['post_id']; ?>" class="mb-4 max-h-[300px] overflow-y-auto">
+                            </div>
+                            <input type="hidden" id="postId_<?php echo $post['post_id']; ?>" value="<?php echo $post['post_id']; ?>">
+                            <input type="hidden" id="userId_<?php echo $post['post_id']; ?>" value="<?php echo htmlspecialchars($user['user_id']); ?>">
+                            <div class="mb-2">
+                                <label class="block text-sm font-medium text-gray-700">Nội dung bình luận</label>
+                                <textarea id="commentContent_<?php echo $post['post_id']; ?>" class="w-full border border-gray-300 rounded-md p-2" rows="4" placeholder="Nhập bình luận của bạn..."></textarea>
+                            </div>
+                            <div class="flex justify-end">
+                                <button onclick="closeCommentDialog(<?php echo $post['post_id']; ?>)" class="px-4 py-2 mr-2 bg-gray-300 rounded-md">Hủy</button>
+                                <button id="submitComment_<?php echo $post['post_id']; ?>" class="px-4 py-2 bg-green-600 text-white rounded-md">Gửi</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -172,12 +231,252 @@
     </main>
     <?php include "src/post/view/layouts/friends.php"; ?>
     <script>
-        const dialogCommentRef = document.getElementById('dialog_comment_ref');
-
-        document.getElementById('comment_ref').addEventListener('click', function() {
-            dialogCommentRef.classList.remove('hidden');
-            dialogCommentRef.classList.add('flex');
+        // Mở dialog share khi nhấp vào nút "Share"
+        document.querySelectorAll('.share-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const postId = this.getAttribute('data-post-id');
+                openShareDialog(postId);
+            });
         });
+
+        // Hàm mở dialog share
+        function openShareDialog(postId) {
+            document.getElementById(`dialog_share_${postId}`).classList.remove('hidden');
+            document.getElementById(`dialog_share_${postId}`).classList.add('flex');
+        }
+
+        // Hàm đóng dialog share
+        function closeShareDialog(postId) {
+            document.getElementById(`dialog_share_${postId}`).classList.add('hidden');
+            document.getElementById(`dialog_share_${postId}`).classList.remove('flex');
+        }
+
+
+        // Hàm sao chép liên kết
+        function copyLink(postId) {
+            const linkInput = document.getElementById(`postLink_${postId}`);
+            navigator.clipboard.writeText(linkInput.value).then(() => {
+                Toastify({
+                    text: "Đã sao chép liên kết!",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: '#22c55e',
+                    stopOnFocus: true
+                }).showToast();
+            }).catch(err => {
+                console.error('Lỗi sao chép:', err);
+                Toastify({
+                    text: "Không thể sao chép liên kết.",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: '#ef4444',
+                    stopOnFocus: true
+                }).showToast();
+            });
+        }
+
+
+        // Hàm xử lý share và gọi API
+        function handleShare(postId, platform) {
+            const userId = '<?php echo isset($_SESSION['user']['user_id']) ? $_SESSION['user']['user_id'] : 0; ?>';
+            const postUrl = document.getElementById(`share_${postId}`).getAttribute('data-post-url');
+
+            if (!userId) {
+                Toastify({
+                    text: "Bạn cần đăng nhập để chia sẻ bài viết.",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: '#ef4444',
+                    stopOnFocus: true
+                }).showToast();
+                return false; // Ngăn mở liên kết nếu chưa đăng nhập
+            }
+
+            // Gọi API để lưu lượt share
+            fetch('/api/toggle-share', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>'
+                    },
+                    body: JSON.stringify({
+                        post_id: postId,
+                        user_id: userId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const shareCountElement = document.getElementById(`share_count_${postId}`);
+                        // shareCountElement.textContent = data.share_count;
+                        document.getElementById(`share_count_ref_${postId}`).textContent = data.share_count;
+                        Toastify({
+                            text: data.message,
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: '#22c55e',
+                            stopOnFocus: true
+                        }).showToast();
+                    } else {
+                        Toastify({
+                            text: data.message || "Lỗi khi chia sẻ bài viết.",
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: '#ef4444',
+                            stopOnFocus: true
+                        }).showToast();
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi:', error);
+                    Toastify({
+                        text: "Có lỗi xảy ra khi chia sẻ bài viết.",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: '#ef4444',
+                        stopOnFocus: true
+                    }).showToast();
+                });
+
+            return true; // Cho phép mở liên kết nếu API thành công
+        }
+
+        document.querySelectorAll('.like-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const postId = this.getAttribute('data-post-id');
+                const userId = '<?php echo isset($_SESSION['user']['user_id']) ? $_SESSION['user']['user_id'] : 0; ?>';
+
+                if (!userId) {
+                    Toastify({
+                        text: "Bạn cần đăng nhập để thích bài viết.",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: '#ef4444',
+                        stopOnFocus: true
+                    }).showToast();
+                    return;
+                }
+
+                fetch('/api/toggle-like', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': '<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>'
+                        },
+                        body: JSON.stringify({
+                            post_id: postId,
+                            user_id: userId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const likeCountElement = document.getElementById(`like_count_${postId}`);
+                            const likeButton = document.getElementById(`like_${postId}`);
+
+                            document.getElementById(`like_count_ref_${postId}`).textContent = data.like_count;
+
+                            if (data.liked) {
+                                // likeButton.classList.remove('fa-regular');
+                                // likeButton.classList.add('fa-solid');
+                                likeButton.classList.add('text-blue-600');
+                            } else {
+                                // likeButton.classList.remove('fa-solid', 'text-blue-600');
+                                // likeButton.classList.add('fa-regular');
+                                likeButton.classList.remove('text-blue-600');
+                            }
+
+                            // likeCountElement.textContent = data.like_count;
+                            Toastify({
+                                text: data.message,
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: '#22c55e',
+                                stopOnFocus: true
+                            }).showToast();
+                        } else {
+                            Toastify({
+                                text: data.message || "Lỗi khi xử lý lượt thích.",
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: '#ef4444',
+                                stopOnFocus: true
+                            }).showToast();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Lỗi:', error);
+                        Toastify({
+                            text: "Có lỗi xảy ra khi xử lý lượt thích.",
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: '#ef4444',
+                            stopOnFocus: true
+                        }).showToast();
+                    });
+            });
+        });
+
+        // Mở dialog comment khi nhấp vào nút "Comment"
+        document.querySelectorAll('.comment-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const postId = this.getAttribute('data-post-id');
+                openCommentDialog(postId);
+            });
+        });
+
+        // Hàm mở dialog comment
+        function openCommentDialog(postId) {
+            document.getElementById(`dialog_comment_${postId}`).classList.remove('hidden');
+            document.getElementById(`dialog_comment_${postId}`).classList.add('flex');
+
+            // Gọi API để lấy danh sách bình luận
+            fetch(`/api/comments/get?post_id=${postId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const commentList = document.getElementById(`commentList_${postId}`);
+                        if (data.data.length > 0) {
+                            commentList.innerHTML = data.data.map(comment => `
+                       <div class="p-2 flex flex-col items-start gap-y-2 border-b border-gray-200">
+                            <div class="flex items-center gap-2">
+                                <img src="${comment.profile_picture || '/assets/images/placeholder.jpg'}" class="w-10 h-10 rounded-full object-cover" alt="Avatar">
+                                <div class="flex flex-col items-start justify-start gap-1">
+                                    <p class="text-sm font-medium text-gray-800">${comment.full_name} (${comment.username})</p>
+                                    <p class="text-xs text-gray-500">${comment.created_at}</p>
+                                </div>
+                            </div>
+                            <p class="ml-12 text-base font-medium text-gray-600">${comment.content}</p>
+                        </div>
+                    `).join('');
+                        } else {
+                            commentList.innerHTML = '<p class="text-gray-500">Không có bình luận nào.</p>';
+                        }
+                    } else {
+                        document.getElementById(`commentList_${postId}`).innerHTML = '<p class="text-red-500">Có lỗi xảy ra: ' + data.message + '</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi:', error);
+                    document.getElementById(`commentList_${postId}`).innerHTML = '<p class="text-red-500">Không thể tải bình luận.</p>';
+                });
+        }
+
+        // Hàm đóng dialog comment
+        function closeCommentDialog(postId) {
+            document.getElementById(`dialog_comment_${postId}`).classList.add('hidden');
+            document.getElementById(`dialog_comment_${postId}`).classList.remove('flex');
+        }
 
         document.getElementById('published').addEventListener('change', function() {
             if (this.checked) {
@@ -218,8 +517,79 @@
             document.getElementById('postDialog').classList.add('hidden');
         }
 
-        document.getElementById('postForm').addEventListener('submit', async function(e) {
+        document.querySelectorAll('[id^="submitComment_"]').forEach(button => {
+            button.addEventListener('click', function() {
+                const postId = this.id.split('_')[1]; // Lấy postId từ id của nút (submitComment_<post_id>)
+                const userId = document.getElementById(`userId_${postId}`).value;
+                const content = document.getElementById(`commentContent_${postId}`).value.trim();
 
+                if (!content) {
+                    Toastify({
+                        text: "Nội dung bình luận không được để trống.",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: '#ef4444',
+                        stopOnFocus: true
+                    }).showToast();
+                    return;
+                }
+
+                fetch('/api/comments/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': '<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>'
+                        },
+                        body: JSON.stringify({
+                            post_id: postId,
+                            user_id: userId,
+                            content: content
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Toastify({
+                                text: "Bình luận của bạn đã được gửi.",
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: '#22c55e',
+                                stopOnFocus: true
+                            }).showToast();
+                            closeCommentDialog(postId);
+                            // Cập nhật số lượng bình luận
+                            const commentCountElement = document.querySelector(`#comment_count_${postId}`);
+                            if (commentCountElement) {
+                                const currentCount = parseInt(commentCountElement.textContent) || 0;
+                                commentCountElement.textContent = currentCount + 1;
+                            }
+                            // Tải lại danh sách bình luận
+                            openCommentDialog(postId);
+                        } else {
+                            Toastify({
+                                text: data.message || "Gửi bình luận thất bại.",
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: '#ef4444',
+                                stopOnFocus: true
+                            }).showToast();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Lỗi:', error);
+                        Toastify({
+                            text: "Có lỗi xảy ra khi gửi bình luận.",
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: '#ef4444',
+                            stopOnFocus: true
+                        }).showToast();
+                    });
+            });
         });
     </script>
 </div>

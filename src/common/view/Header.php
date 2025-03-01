@@ -61,7 +61,7 @@
     // }
     // 
     ?>
-    <div class="w-screen">
+    <div class="overflow-x-hidden">
         <header class="fixed z-50 top-0 left-0 right-0 h-[78px] bg-white mb-[78px] shadow-md flex items-center w-full justify-center">
             <div class="w-full flex items-center mx-[150px]">
 
@@ -98,36 +98,40 @@
                 </div>
 
                 <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): ?>
-                    <div class="dropdown">
-                        <div class="flex items-center gap-x-2 cursor-pointer" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="flex items-end flex-col">
-                                <p class=" text-gray-800 text-base font-semibold"><?php echo htmlspecialchars($_SESSION['user']['full_name']) ?></p>
-                                <p class="text-gray-500 text-sm font-light">Phiêu lưu mạo hiểm</p>
-                            </div>
 
-                            <img class="w-[56px] h-[56px] border shadow rounded-full hover:opacity-80 cursor-pointer transition-all duration-500" src="/assets/images/placeholder.jpg" alt="user" />
 
+                    <div id="userDropdown" class="flex items-center gap-x-2 cursor-pointer relative group">
+                        <div class="flex items-end flex-col">
+                            <p id="full_name_ref" class="text-gray-800 text-base font-semibold"><?php echo htmlspecialchars($_SESSION['user']['full_name']) ?></p>
+                            <p id="bio_ref" class="text-gray-500 text-sm font-light">Phiêu lưu mạo hiểm</p>
                         </div>
 
-                        <ul class="dropdown-menu">
-                            <?php if (isset($_SESSION['user']) && $_SESSION['user']['role'] == 'admin'): ?>
-                                <li><a class="dropdown-item" href="/user/admin">Admin</a></li>
-                            <?php endif; ?>
+                        <img id="profile_picture_ref" class="w-[56px] h-[56px] border shadow rounded-full hover:opacity-80 cursor-pointer transition-all duration-500" src="/assets/images/placeholder.jpg" alt="user" />
 
-                            <li><a class="dropdown-item" href="index?route=user/user/profile">Hồ sơ</a></li>
-                            <li><a class="dropdown-item" href="index?route=user/user/settings">Cài đặt</a></li>
-                            <li><a class="dropdown-item" href="#">Dark mode</a></li>
-                            <div class="dropdown-divider"></div>
-                            <li>
-                                <a class="dropdown-item" href="/logout">
-                                    <div class="flex items-center gap-x-2">
-                                        <i class="fa-solid fa-right-from-bracket text-rose-600"></i>
+                        <!-- Dropdown menu -->
+                        <div class="absolute right-0 mt-2 top-full w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-10">
+                            <ul class="py-1">
+                                <?php if (isset($_SESSION['user']) && $_SESSION['user']['role'] == 'admin'): ?>
+                                    <li>
+                                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"><i class="fa-solid fa-shield mr-2"></i> Admin</a>
+                                    </li>
+                                <?php endif; ?>
+                                <li>
+                                    <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"><i class="fa-solid fa-user mr-2"></i> Hồ sơ</a>
+                                </li>
+                                <li>
+                                    <a href="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"><i class="fa-solid fa-gear mr-2"></i> Cài đặt</a>
+                                </li>
+                                <li>
+                                    <a href="/logout" class="flex items-center gap-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                        <i class="fa-solid text-base fa-right-from-bracket text-rose-600"></i>
                                         <p class="text-rose-600 font-semibold text-base">Đăng xuất</p>
-                                    </div>
-                                </a>
-                            </li>
-                        </ul>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
+
                 <?php else: ?>
                     <a href="/login">
                         <button type="button" class="px-6 py-2 text-sm font-semibold border-[2px] hover:bg-green-500 hover:text-white transition-all hover:scale-105 duration-500 rounded-md border-green-500 text-green-600">Đăng Nhập</button>
@@ -135,6 +139,25 @@
                 <?php endif; ?>
             </div>
             <script>
+                const full_name_ref = document.getElementById('full_name_ref');
+                const bio_ref = document.getElementById('bio_ref');
+                const profile_picture_ref = document.getElementById('profile_picture_ref')
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    const dropdown = document.getElementById('userDropdown');
+                    const dropdownMenu = dropdown.querySelector('.absolute');
+
+                    dropdown.addEventListener('mouseenter', function() {
+                        dropdownMenu.classList.remove('opacity-0', 'invisible');
+                        dropdownMenu.classList.add('opacity-100', 'visible');
+                    });
+
+                    dropdown.addEventListener('mouseleave', function() {
+                        dropdownMenu.classList.remove('opacity-100', 'visible');
+                        dropdownMenu.classList.add('opacity-0', 'invisible');
+                    });
+                });
+
                 function openSearchDialog(event) {
                     event.preventDefault();
                     document.getElementById('searchDialog').classList.remove('hidden');
@@ -189,6 +212,37 @@
                     const query = event.target.value.trim();
                     search(query);
                 }, 300)); // Chờ 300ms trước khi gửi request
+
+
+                async function getMe() {
+                    try {
+                        const response = await fetch('/api/users/me');
+
+                        if (!response.ok) {
+                            throw new Error('Không thể lấy thông tin người dùng.');
+                        }
+
+                        const data = await response.json();
+                        const user = data.user;
+                        console.log(user);
+
+
+                        full_name_ref.textContent = user.full_name;
+                        bio_ref.textContent = user.bio;
+
+                        if (user.profile_picture) {
+                            profile_picture_ref.src = user.profile_picture;
+                        }
+
+                    } catch (error) {
+                        console.error('Lỗi:', error);
+                    }
+                }
+
+
+                document.addEventListener('DOMContentLoaded', async function() {
+                    await getMe();
+                });
             </script>
         </header>
 
