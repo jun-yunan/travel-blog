@@ -143,6 +143,8 @@
                 const bio_ref = document.getElementById('bio_ref');
                 const profile_picture_ref = document.getElementById('profile_picture_ref')
 
+                let isLoading = false;
+
                 document.addEventListener('DOMContentLoaded', function() {
                     const dropdown = document.getElementById('userDropdown');
                     const dropdownMenu = dropdown.querySelector('.absolute');
@@ -214,8 +216,13 @@
                 }, 300)); // Chờ 300ms trước khi gửi request
 
 
+                if (isLoading) {
+
+                }
+
                 async function getMe() {
                     try {
+                        isLoading = true;
                         const response = await fetch('/api/users/me');
 
                         if (!response.ok) {
@@ -236,6 +243,8 @@
 
                     } catch (error) {
                         console.error('Lỗi:', error);
+                    } finally {
+                        isLoading = false;
                     }
                 }
 
