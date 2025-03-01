@@ -208,7 +208,7 @@
                     }).showToast();
                     closeEditProfileDialog();
                     // Cập nhật giao diện nếu cần (ví dụ: reload trang hoặc cập nhật avatar)
-                    // window.location.reload(); // Hoặc gọi API để lấy lại dữ liệu mới
+                    window.location.reload(); // Hoặc gọi API để lấy lại dữ liệu mới
                 } else {
                     Toastify({
                         text: data.message,
