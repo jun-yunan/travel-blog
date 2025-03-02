@@ -171,6 +171,10 @@
                     <input type="email" name="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" class="w-full border border-gray-300 rounded-md p-2" required>
                 </div>
                 <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Tiểu sử</label>
+                    <input type="text" name="bio" value="<?php echo htmlspecialchars($user['bio'] ?? ''); ?>" class="w-full border border-gray-300 rounded-md p-2" required>
+                </div>
+                <div class="mb-2">
                     <label class="block text-sm font-medium text-gray-700">Ảnh đại diện</label>
                     <input type="file" id="profilePicture" accept="image/*" class="w-full">
                     <img id="profilePreview" src="<?php echo htmlspecialchars($user['profile_picture'] ?? '/assets/images/placeholder.jpg'); ?>" class="mt-2 max-w-xs h-[100px] object-cover rounded-md" alt="Preview">
@@ -454,6 +458,7 @@
             formData.append('full_name', document.querySelector('input[name="full_name"]').value);
             formData.append('username', document.querySelector('input[name="username"]').value);
             formData.append('email', document.querySelector('input[name="email"]').value);
+            formData.append('bio', document.querySelector('input[name="bio"]').value);
 
 
 
