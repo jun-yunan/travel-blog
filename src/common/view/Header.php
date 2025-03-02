@@ -196,7 +196,7 @@
                                 resultDiv.innerHTML = '<p class="text-gray-500">Không tìm thấy kết quả.</p>';
                             } else {
                                 resultDiv.innerHTML = results.map(post => `
-                    <a href="/posts/${post.slug}" class="block p-2 hover:bg-gray-100">
+                    <a href="/posts/view-post?slug=${post.slug}" class="block p-2 hover:bg-gray-100">
                         <strong>${post.title}</strong>
                         <span class="text-xs text-gray-500"> (${post.published_at})</span>
                     </a>

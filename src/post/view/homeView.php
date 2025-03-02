@@ -234,7 +234,7 @@
                     </div>
                 </div>
             <?php endforeach; ?>
-
+            <a href="" class="bg-green-500 text-white hover:bg-green-600 cursor-pointer px-3 py-2 rounded-md">Xem thêm</a>
         </div>
     </main>
     <?php include "src/post/view/layouts/friends.php"; ?>

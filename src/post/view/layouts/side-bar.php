@@ -1,10 +1,10 @@
 <div class="w-[350px] h-[1500px] bg-white p-4 border border-black border-opacity-10 rounded-lg overflow-hidden relative flex flex-col space-y-4 shadow-md max-h-[2000px] overflow-y-auto scrollbar-custom">
     <!-- Phần slider sự kiện -->
-    <div class="h-[300px] p-[2rem] mt-[0.5rem]">
+    <div class="h-[300px] w-full flex flex-col items-center mt-[0.5rem]">
         <!-- Slider Container -->
-        <div class="flex items-center space-x-2 mb-2 mt-[-0.75rem]">
+        <div class="flex w-full items-center justify-between mb-2">
             <img src="/assets/images/icon.jpg" alt="Icon" class="w-6 h-6">
-            <h2 class="text-ls font-bold text-gray-900">Sự kiện nổi bật sắp diễn ra</h2>
+            <h2 class="text-base font-bold text-gray-900">Sự kiện nổi bật sắp diễn ra</h2>
             <img src="/assets/images/icon.jpg" alt="Icon" class="w-6 h-6 rotate-90">
         </div>
         <div class="relative w-[275px] h-[171px]">
@@ -196,10 +196,21 @@
 </div>
 
 <script>
-    const slides = [
-        { img: "/assets/images/lehoiamnhac.jpg", text: "Lễ hội âm nhạc", date: "27-02-2025 đến 03-03-2025" },
-        { img: "/assets/images/tuanlethoitrang.webp", text: "Tuần lễ thời trang", date: "10-04-2025 đến 15-04-2025" },
-        { img: "/assets/images/banhdangiang.jpg", text: "Bánh dân giang nam bộ", date: "01-06-2025 đến 05-06-2025" }
+    const slides = [{
+            img: "/assets/images/lehoiamnhac.jpg",
+            text: "Lễ hội âm nhạc",
+            date: "27-02-2025 đến 03-03-2025"
+        },
+        {
+            img: "/assets/images/tuanlethoitrang.webp",
+            text: "Tuần lễ thời trang",
+            date: "10-04-2025 đến 15-04-2025"
+        },
+        {
+            img: "/assets/images/banhdangiang.jpg",
+            text: "Bánh dân giang nam bộ",
+            date: "01-06-2025 đến 05-06-2025"
+        }
     ];
 
     let currentIndex = 0;
