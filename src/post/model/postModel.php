@@ -926,4 +926,142 @@ class PostModel extends Base
             return [];
         }
     }
+
+
+    public function getUserSchedules($user_id, $limit = 10, $offset = 0, $status = null)
+    {
+        try {
+            $sql = "SELECT s.*, l.name as location_name
+                    FROM schedules s
+                    LEFT JOIN locations l ON s.location_id = l.location_id
+                    WHERE s.user_id = ?";
+
+            $params = [$user_id];
+
+            if ($status) {
+                $sql .= " AND s.status = ?";
+                $params[] = $status;
+            }
+
+            $sql .= " ORDER BY s.start_date DESC
+                     LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+
+            $schedules = $this->database->query($sql, $params);
+
+            if (!$schedules || !is_array($schedules)) {
+                return [];
+            }
+
+            return $schedules;
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    public function createSchedule($user_id, $title, $start_date, $end_date, $location_id = null, $description = '', $status = 'pending')
+    {
+        try {
+            $sql = "INSERT INTO schedules (user_id, title, start_date, end_date, location_id, description, status) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $schedule_id = $this->database->query($sql, [$user_id, $title, $start_date, $end_date, $location_id, $description, $status]);
+
+            // $schedule_id = $this->database->lastInsertId();
+
+            return [
+                'status' => 'success',
+                'message' => 'Tạo lịch trình thành công!',
+                'schedule_id' => $schedule_id
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi tạo lịch trình: ' . $e->getMessage()
+            ];
+        }
+    }
+
+
+    public function updateSchedule($schedule_id, $user_id, $title, $start_date, $end_date, $location_id = null, $description = '', $status = 'pending')
+    {
+        try {
+            $sql = "UPDATE schedules 
+                    SET title = ?, start_date = ?, end_date = ?, location_id = ?, description = ?, status = ?, updated_at = CURRENT_TIMESTAMP 
+                    WHERE schedule_id = ? AND user_id = ?";
+            $result = $this->database->query($sql, [$title, $start_date, $end_date, $location_id, $description, $status, $schedule_id, $user_id]);
+
+            if ($result) {
+                return [
+                    'status' => 'success',
+                    'message' => 'Cập nhật lịch trình thành công!'
+                ];
+            } else {
+                return [
+                    'status' => 'error',
+                    'message' => 'Cập nhật lịch trình thất bại. Vui lòng kiểm tra quyền truy cập.'
+                ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi cập nhật lịch trình: ' . $e->getMessage()
+            ];
+        }
+    }
+
+
+    public function deleteSchedule($schedule_id, $user_id)
+    {
+        try {
+            $sql = "DELETE FROM schedules WHERE schedule_id = ? AND user_id = ?";
+            $result = $this->database->query($sql, [$schedule_id, $user_id]);
+
+            if ($result) {
+                return [
+                    'status' => 'success',
+                    'message' => 'Xóa lịch trình thành công!'
+                ];
+            } else {
+                return [
+                    'status' => 'error',
+                    'message' => 'Xóa lịch trình thất bại. Vui lòng kiểm tra quyền truy cập.'
+                ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi xóa lịch trình: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    public function getScheduleById($schedule_id, $user_id)
+    {
+        try {
+            $sql = "SELECT s.*, l.name as location_name
+                FROM schedules s
+                LEFT JOIN locations l ON s.location_id = l.location_id
+                WHERE s.schedule_id = ? AND s.user_id = ?";
+            $schedule = $this->database->query($sql, [$schedule_id, $user_id]);
+
+            if (!$schedule || !is_array($schedule) || empty($schedule)) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Lịch trình không tồn tại hoặc không thuộc về bạn.'
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'data' => $schedule[0],
+                'message' => 'Lấy thông tin lịch trình thành công.'
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi lấy thông tin lịch trình: ' . $e->getMessage()
+            ];
+        }
+    }
 }

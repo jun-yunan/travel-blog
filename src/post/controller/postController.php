@@ -22,11 +22,11 @@ class PostController extends Base
         $this->output->load("post/home",  $data);
     }
 
-    public function schedule(): void
-    {
-        $data = ["title" => "Schedule"];
-        $this->output->load("post/schedule",  $data);
-    }
+    // public function schedule(): void
+    // {
+    //     $data = ["title" => "Schedule"];
+    //     $this->output->load("post/schedule",  $data);
+    // }
 
     public function saved(): void
     {
@@ -426,6 +426,195 @@ class PostController extends Base
                 'status' => 'error',
                 'message' => 'Lỗi khi lấy bình luận: ' . $e->getMessage()
             ]);
+        }
+        exit();
+    }
+
+
+    public function schedule(): void
+    {
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            $_SESSION['toast'] = [
+                'message' => 'Bạn cần đăng nhập để xem lịch trình.',
+                'type' => 'error'
+            ];
+            header('Location: /login');
+            exit();
+        }
+
+        $user = $_SESSION['user'];
+        $post_model = new PostModel();
+
+        // Lấy danh sách lịch trình của user
+        $user_id = $user['user_id'];
+        $schedules = $post_model->getUserSchedules($user_id, 10, 0); // Giới hạn 10 schedules, offset 0
+
+        $data = [
+            'title' => 'Lịch trình - ' . htmlspecialchars($user['full_name']),
+            'schedules' => $schedules
+        ];
+
+        $this->output->load('post/schedule', $data);
+    }
+
+
+    public function create_schedule(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn cần đăng nhập để tạo lịch trình.'
+            ]);
+            exit();
+        }
+
+        $user_id = $_SESSION['user']['user_id'];
+        $post_model = new PostModel();
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($data['title']) || !isset($data['start_date']) || !isset($data['end_date'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Dữ liệu không hợp lệ. Vui lòng cung cấp tiêu đề, ngày bắt đầu và ngày kết thúc.'
+            ]);
+            exit();
+        }
+
+        $title = trim($data['title']);
+        $start_date = $data['start_date'];
+        $end_date = $data['end_date'];
+        $location_id = $data['location_id'] ?? null;
+        $description = $data['description'] ?? '';
+        $status = $data['status'] ?? 'pending';
+
+        if (empty($title)) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Tiêu đề không được để trống.'
+            ]);
+            exit();
+        }
+
+        $result = $post_model->createSchedule($user_id, $title, $start_date, $end_date, $location_id, $description, $status);
+
+        echo json_encode($result);
+        exit();
+    }
+
+
+    public function update_schedule(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn cần đăng nhập để cập nhật lịch trình.'
+            ]);
+            exit();
+        }
+
+        $user_id = $_SESSION['user']['user_id'];
+        $post_model = new PostModel();
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($data['schedule_id']) || !isset($data['title']) || !isset($data['start_date']) || !isset($data['end_date'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Dữ liệu không hợp lệ. Vui lòng cung cấp ID lịch trình, tiêu đề, ngày bắt đầu và ngày kết thúc.'
+            ]);
+            exit();
+        }
+
+        $schedule_id = (int)$data['schedule_id'];
+        $title = trim($data['title']);
+        $start_date = $data['start_date'];
+        $end_date = $data['end_date'];
+        $location_id = $data['location_id'] ?? null;
+        $description = $data['description'] ?? '';
+        $status = $data['status'] ?? 'pending';
+
+        if (empty($title)) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Tiêu đề không được để trống.'
+            ]);
+            exit();
+        }
+
+        $result = $post_model->updateSchedule($schedule_id, $user_id, $title, $start_date, $end_date, $location_id, $description, $status);
+
+        echo json_encode($result);
+        exit();
+    }
+
+    public function delete_schedule(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn cần đăng nhập để xóa lịch trình.'
+            ]);
+            exit();
+        }
+
+        $user_id = $_SESSION['user']['user_id'];
+        $post_model = new PostModel();
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($data['schedule_id'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Dữ liệu không hợp lệ. Vui lòng cung cấp ID lịch trình.'
+            ]);
+            exit();
+        }
+
+        $schedule_id = (int)$data['schedule_id'];
+
+        $result = $post_model->deleteSchedule($schedule_id, $user_id);
+
+        echo json_encode($result);
+        exit();
+    }
+
+    public function get_schedule($schedule_id): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn cần đăng nhập để xem lịch trình.'
+            ]);
+            exit();
+        }
+
+        $user_id = $_SESSION['user']['user_id'];
+        $post_model = new PostModel();
+
+        $schedule = $post_model->getScheduleById($schedule_id, $user_id);
+
+        if ($schedule['status'] === 'success') {
+            echo json_encode([
+                'status' => 'success',
+                'data' => $schedule['data'],
+                'message' => 'Lấy thông tin lịch trình thành công.'
+            ]);
+        } else {
+            echo json_encode($schedule);
         }
         exit();
     }

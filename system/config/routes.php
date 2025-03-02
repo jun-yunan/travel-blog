@@ -24,4 +24,8 @@ return [
     "/api/comments/get" => "post/post/get_comments",
     "/api/toggle-like" => "post/post/toggle_like",
     "/api/toggle-share" => "post/post/toggle_share",
+    "/api/schedules/create" => "post/post/create_schedule",
+    "/api/schedules/update" => "post/post/update_schedule",
+    "/api/schedules/delete" => "post/post/delete_schedule",
+    "/api/schedules/{schedule_id}" => "post/post/get_schedule",
 ];
