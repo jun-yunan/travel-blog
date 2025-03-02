@@ -1054,7 +1054,7 @@ class PostModel extends Base
 
             return [
                 'status' => 'success',
-                'data' => $schedule[0],
+                'data' => $schedule,
                 'message' => 'Lấy thông tin lịch trình thành công.'
             ];
         } catch (\Exception $e) {
