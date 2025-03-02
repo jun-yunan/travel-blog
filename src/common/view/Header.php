@@ -113,7 +113,7 @@
                             <ul class="py-1">
                                 <?php if (isset($_SESSION['user']) && $_SESSION['user']['role'] == 'admin'): ?>
                                     <li>
-                                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"><i class="fa-solid fa-shield mr-2"></i> Admin</a>
+                                        <a href="/admin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"><i class="fa-solid fa-shield mr-2"></i> Admin</a>
                                     </li>
                                 <?php endif; ?>
                                 <li>

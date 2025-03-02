@@ -1064,4 +1064,273 @@ class PostModel extends Base
             ];
         }
     }
+
+
+    // ADMIN
+
+    public function getAllPosts($limit = 10, $offset = 0, $status = null, $search = '')
+    {
+        try {
+            $sql = "SELECT p.*, u.username, u.full_name, u.role
+                    FROM posts p
+                    JOIN users u ON p.user_id = u.user_id
+                    WHERE 1=1";
+
+            $params = [];
+
+            if ($status) {
+                $sql .= " AND p.status = ?";
+                $params[] = $status;
+            }
+
+            if (!empty($search)) {
+                $sql .= " AND (p.title LIKE ? OR p.content LIKE ?)";
+                $params[] = "%" . $search . "%";
+                $params[] = "%" . $search . "%";
+            }
+
+            $sql .= " ORDER BY p.published_at DESC
+                     LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+
+            $posts = $this->database->query($sql, $params);
+
+            if (!$posts || !is_array($posts)) {
+                return [];
+            }
+
+            foreach ($posts as &$post) {
+                $post['like_count'] = $this->getLikeCount($post['post_id'])['like_count'];
+                $post['share_count'] = $this->getShareCount($post['post_id'])['share_count'];
+                $post['comment_count'] = $this->getCommentsCount($post['post_id'])['comment_count'];
+
+                // Lấy tags
+                $tagSql = "SELECT t.tag_id, t.name, t.slug
+                          FROM tags t
+                          JOIN post_tags pt ON t.tag_id = pt.tag_id
+                          WHERE pt.post_id = ?";
+                $tags = $this->database->query($tagSql, [$post['post_id']]);
+                $post['tags'] = is_array($tags) ? $tags : [];
+
+                // Lấy categories
+                $categorySql = "SELECT c.category_id, c.name, c.slug
+                               FROM categories c
+                               JOIN post_categories pc ON c.category_id = pc.category_id
+                               WHERE pc.post_id = ?";
+                $categories = $this->database->query($categorySql, [$post['post_id']]);
+                $post['categories'] = is_array($categories) ? $categories : [];
+            }
+
+            return $posts;
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    public function getAllUsers($limit = 10, $offset = 0, $search = '')
+    {
+        try {
+            $sql = "SELECT user_id, username, full_name, email, role, created_at
+                    FROM users
+                    WHERE 1=1";
+
+            $params = [];
+
+            if (!empty($search)) {
+                $sql .= " AND (username LIKE ? OR full_name LIKE ? OR email LIKE ?)";
+                $params[] = "%" . $search . "%";
+                $params[] = "%" . $search . "%";
+                $params[] = "%" . $search . "%";
+            }
+
+            $sql .= " ORDER BY created_at DESC
+                     LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+
+            $users = $this->database->query($sql, $params);
+
+            if (!$users || !is_array($users)) {
+                return [];
+            }
+
+            return $users;
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    public function getAllComments($limit = 10, $offset = 0, $search = '')
+    {
+        try {
+            $sql = "SELECT c.*, p.title as post_title, u.username, u.full_name
+                    FROM comments c
+                    JOIN posts p ON c.post_id = p.post_id
+                    JOIN users u ON c.user_id = u.user_id
+                    WHERE 1=1";
+
+            $params = [];
+
+            if (!empty($search)) {
+                $sql .= " AND (c.content LIKE ? OR p.title LIKE ? OR u.username LIKE ?)";
+                $params[] = "%" . $search . "%";
+                $params[] = "%" . $search . "%";
+                $params[] = "%" . $search . "%";
+            }
+
+            $sql .= " ORDER BY c.created_at DESC
+                     LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+
+            $comments = $this->database->query($sql, $params);
+
+            if (!$comments || !is_array($comments)) {
+                return [];
+            }
+
+            return $comments;
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    public function getAllSchedules($limit = 10, $offset = 0, $search = '')
+    {
+        try {
+            $sql = "SELECT s.*, u.username, u.full_name, l.name as location_name
+                    FROM schedules s
+                    JOIN users u ON s.user_id = u.user_id
+                    LEFT JOIN locations l ON s.location_id = l.location_id
+                    WHERE 1=1";
+
+            $params = [];
+
+            if (!empty($search)) {
+                $sql .= " AND (s.title LIKE ? OR s.description LIKE ? OR u.username LIKE ?)";
+                $params[] = "%" . $search . "%";
+                $params[] = "%" . $search . "%";
+                $params[] = "%" . $search . "%";
+            }
+
+            $sql .= " ORDER BY s.start_date DESC
+                     LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+
+            $schedules = $this->database->query($sql, $params);
+
+            if (!$schedules || !is_array($schedules)) {
+                return [];
+            }
+
+            return $schedules;
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+
+    public function deletePost($post_id)
+    {
+        try {
+            $sql = "DELETE FROM posts WHERE post_id = ?";
+            $result = $this->database->query($sql, [$post_id]);
+
+            if ($result) {
+                return [
+                    'status' => 'success',
+                    'message' => 'Xóa bài viết thành công!'
+                ];
+            } else {
+                return [
+                    'status' => 'error',
+                    'message' => 'Xóa bài viết thất bại. Vui lòng kiểm tra quyền truy cập.'
+                ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi xóa bài viết: ' . $e->getMessage()
+            ];
+        }
+    }
+
+
+    public function updatePostStatus($post_id, $status)
+    {
+        try {
+            $sql = "UPDATE posts SET status = ? WHERE post_id = ?";
+            $result = $this->database->query($sql, [$status, $post_id]);
+
+            if ($result) {
+                return [
+                    'status' => 'success',
+                    'message' => 'Cập nhật trạng thái bài viết thành công!'
+                ];
+            } else {
+                return [
+                    'status' => 'error',
+                    'message' => 'Cập nhật trạng thái thất bại. Vui lòng kiểm tra quyền truy cập.'
+                ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi cập nhật trạng thái: ' . $e->getMessage()
+            ];
+        }
+    }
+
+
+    public function getPostById($post_id)
+    {
+        try {
+            $sql = "SELECT p.*, u.username, u.full_name, u.role
+                FROM posts p
+                JOIN users u ON p.user_id = u.user_id
+                WHERE p.post_id = ?";
+            $post = $this->database->query($sql, [$post_id]);
+
+            if (!$post || !is_array($post) || empty($post)) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Bài viết không tồn tại.'
+                ];
+            }
+
+            // $post = $post[0];
+            $post['like_count'] = $this->getLikeCount($post['post_id'])['like_count'];
+            $post['share_count'] = $this->getShareCount($post['post_id'])['share_count'];
+            $post['comment_count'] = $this->getCommentsCount($post['post_id'])['comment_count'];
+
+            // Lấy tags
+            $tagSql = "SELECT t.tag_id, t.name, t.slug
+                  FROM tags t
+                  JOIN post_tags pt ON t.tag_id = pt.tag_id
+                  WHERE pt.post_id = ?";
+            $tags = $this->database->query($tagSql, [$post['post_id']]);
+            $post['tags'] = is_array($tags) ? $tags : [];
+
+            // Lấy categories
+            $categorySql = "SELECT c.category_id, c.name, c.slug
+                       FROM categories c
+                       JOIN post_categories pc ON c.category_id = pc.category_id
+                       WHERE pc.post_id = ?";
+            $categories = $this->database->query($categorySql, [$post['post_id']]);
+            $post['categories'] = is_array($categories) ? $categories : [];
+
+            return [
+                'status' => 'success',
+                'data' => $post,
+                'message' => 'Lấy thông tin bài viết thành công.'
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi lấy bài viết: ' . $e->getMessage()
+            ];
+        }
+    }
 }

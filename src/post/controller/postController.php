@@ -618,4 +618,121 @@ class PostController extends Base
         }
         exit();
     }
+
+
+    public function admin(): void
+    {
+        session_start();
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+            $_SESSION['toast'] = [
+                'message' => 'Bạn không có quyền truy cập trang quản trị.',
+                'type' => 'error'
+            ];
+            header('Location: /');
+            exit();
+        }
+
+        $post_model = new PostModel();
+
+        // Lấy danh sách posts (mặc định, có thể lọc qua GET)
+        $limit = (int)($_GET['limit'] ?? 10);
+        $page = (int)($_GET['page'] ?? 1);
+        $offset = ($page - 1) * $limit;
+        $status = $_GET['status'] ?? null;
+        $search = $_GET['search'] ?? '';
+
+        $posts = $post_model->getAllPosts($limit, $offset, $status, $search);
+
+        $data = [
+            'title' => 'Quản trị - Danh sách bài viết',
+            'posts' => $posts,
+            'limit' => $limit,
+            'page' => $page,
+            'search' => $search,
+            'status' => $status
+        ];
+
+        $this->output->load('post/admin', $data);
+    }
+
+
+    // API để quản lý posts, users, comments, schedules (tùy chọn)
+    public function admin_update_post(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn không có quyền thực hiện thao tác này.'
+            ]);
+            exit();
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($data['post_id']) || !isset($data['action'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Dữ liệu không hợp lệ.'
+            ]);
+            exit();
+        }
+
+        $post_id = (int)$data['post_id'];
+        $action = $data['action']; // 'update', 'delete', v.v.
+
+        $post_model = new PostModel();
+
+        try {
+            if ($action === 'delete') {
+                $result = $post_model->deletePost($post_id);
+            } elseif ($action === 'update' && isset($data['status'])) {
+                $result = $post_model->updatePostStatus($post_id, $data['status']);
+            } else {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Hành động không hợp lệ.'
+                ]);
+                exit();
+            }
+
+            echo json_encode($result);
+        } catch (\Exception $e) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Lỗi khi xử lý: ' . $e->getMessage()
+            ]);
+        }
+        exit();
+    }
+
+    public function get_post($post_id): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn không có quyền truy cập.'
+            ]);
+            exit();
+        }
+
+        $post_model = new PostModel();
+        $post = $post_model->getPostById($post_id);
+
+        if ($post['status'] === 'success') {
+            echo json_encode([
+                'status' => 'success',
+                'data' => $post['data'],
+                'message' => 'Lấy thông tin bài viết thành công.'
+            ]);
+        } else {
+            echo json_encode($post);
+        }
+        exit();
+    }
 }

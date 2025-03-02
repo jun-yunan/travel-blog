@@ -28,4 +28,8 @@ return [
     "/api/schedules/update" => "post/post/update_schedule",
     "/api/schedules/delete" => "post/post/delete_schedule",
     "/api/schedules/{schedule_id}" => "post/post/get_schedule",
+    "/admin" => "post/post/admin",
+    "/api/admin/update-post" => "post/post/admin_update_post",
+    "/admin/posts" => "post/post/admin_posts",
+    "/admin/users" => "user/user/admin_users",
 ];
