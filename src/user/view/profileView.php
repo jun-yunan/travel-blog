@@ -152,6 +152,38 @@
         </div>
     </div>
 
+    <!-- Dialog chỉnh sửa hồ sơ -->
+    <div id="editProfileDialog" class="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center" onclick="closeEditProfileDialog()">
+        <div class="bg-white p-6 rounded-lg w-[90%] max-w-md" onclick="event.stopPropagation()">
+            <h2 class="text-xl font-bold mb-4">Chỉnh sửa hồ sơ</h2>
+            <form id="editProfileForm" class="space-y-4">
+                <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user['user_id']); ?>">
+                <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Họ và tên</label>
+                    <input type="text" name="full_name" value="<?php echo htmlspecialchars($user['full_name']); ?>" class="w-full border border-gray-300 rounded-md p-2" required>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Username</label>
+                    <input type="text" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" class="w-full border border-gray-300 rounded-md p-2" required>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" name="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" class="w-full border border-gray-300 rounded-md p-2" required>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Ảnh đại diện</label>
+                    <input type="file" id="profilePicture" accept="image/*" class="w-full">
+                    <img id="profilePreview" src="<?php echo htmlspecialchars($user['profile_picture'] ?? '/assets/images/placeholder.jpg'); ?>" class="mt-2 max-w-xs h-[100px] object-cover rounded-md" alt="Preview">
+                    <input type="hidden" name="profile_picture" id="selectedProfilePicture" value="<?php echo htmlspecialchars($user['profile_picture'] ?? ''); ?>">
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" onclick="closeEditProfileDialog()" class="px-4 py-2 mr-2 bg-gray-300 rounded-md">Hủy</button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
         // Toggle dropdown menu
@@ -214,7 +246,6 @@
                 });
         }
 
-        // Đóng dialog chỉnh sửa bài viết
         function closeEditPostDialog() {
             document.getElementById('editPostDialog').classList.add('hidden');
             document.getElementById('editPostDialog').classList.remove('flex');
@@ -222,7 +253,6 @@
             document.getElementById('editSelectedImage').value = '';
         }
 
-        // Xử lý upload ảnh trong dialog chỉnh sửa
         document.getElementById('editFeaturedImage').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
@@ -237,7 +267,6 @@
             }
         });
 
-        // Xử lý submit form chỉnh sửa bài viết qua AJAX
         document.getElementById('editPostForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const postId = document.getElementById('editPostId').value;
@@ -363,6 +392,121 @@
                     }).showToast();
                 });
         }
+
+
+        // Mở dialog chỉnh sửa hồ sơ
+        function openEditProfileDialog() {
+            document.getElementById('editProfileDialog').classList.remove('hidden');
+            document.getElementById('editProfileDialog').classList.add('flex');
+        }
+
+        // Đóng dialog chỉnh sửa hồ sơ
+        function closeEditProfileDialog() {
+            document.getElementById('editProfileDialog').classList.add('hidden');
+            document.getElementById('editProfileDialog').classList.remove('flex');
+        }
+
+        // Xử lý upload ảnh profile
+        document.getElementById('profilePicture').addEventListener('change', async function(event) {
+            const file = event.target.files[0];
+            if (file) {
+
+
+                try {
+                    const base64String = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            resolve(e.target.result);
+                        };
+                        reader.onerror = function(e) {
+                            reject(new Error('Lỗi khi đọc file ảnh: ' + e.target.error));
+                        };
+                        reader.readAsDataURL(file);
+                    });
+
+                    console.log('Base64:', base64String);
+
+
+                    document.getElementById('profilePreview').src = base64String;
+                    document.getElementById('selectedProfilePicture').value = base64String;
+                } catch (error) {
+                    console.log('Lỗi:', error);
+                    Toastify({
+                        text: "Có lỗi xảy ra khi đọc file ảnh.",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: '#ef4444',
+                        stopOnFocus: true
+                    }).showToast();
+
+                }
+            }
+        });
+
+
+        // Gửi form qua AJAX
+        document.getElementById('editProfileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+
+            formData.append('user_id', document.querySelector('input[name="user_id"]').value);
+            formData.append('full_name', document.querySelector('input[name="full_name"]').value);
+            formData.append('username', document.querySelector('input[name="username"]').value);
+            formData.append('email', document.querySelector('input[name="email"]').value);
+
+
+
+            formData.append('profile_picture', document.getElementById('selectedProfilePicture').value);
+
+            console.log('Form data:', formData);
+
+
+
+
+            // formData.append('profile_picture', document.getElementById('selectedProfilePicture').value);
+
+            await fetch('/api/profile/update', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Toastify({
+                            text: data.message,
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: '#22c55e',
+                            stopOnFocus: true
+                        }).showToast();
+                        closeEditProfileDialog();
+
+                        window.location.reload(); // Hoặc gọi API để lấy lại dữ liệu mới
+                    } else {
+                        Toastify({
+                            text: data.message,
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: '#ef4444',
+                            stopOnFocus: true
+                        }).showToast();
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi:', error);
+                    Toastify({
+                        text: "Có lỗi xảy ra khi cập nhật hồ sơ.",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: '#ef4444',
+                        stopOnFocus: true
+                    }).showToast();
+                });
+        });
 
         document.addEventListener('DOMContentLoaded', function() {
             const toast = document.querySelector('.toast');

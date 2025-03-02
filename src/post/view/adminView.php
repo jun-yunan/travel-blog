@@ -63,8 +63,8 @@
 
     <!-- Phân trang -->
     <?php
-    $totalPosts = count($post_model->getAllPosts(9999, 0, $status, $search)); // Giả sử lấy tổng số posts
-    $totalPages = ceil($totalPosts / $limit);
+    // $totalPosts = count($post_model->getAllPosts(9999, 0, $status, $search)); // Giả sử lấy tổng số posts
+    // $totalPages = ceil($totalPosts / $limit);
     ?>
     <div class="mt-6 text-center">
         <?php for ($i = 1; $i <= $totalPages; $i++): ?>
