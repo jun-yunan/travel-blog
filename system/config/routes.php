@@ -32,6 +32,8 @@ return [
     "/api/posts/update" => "post/post/update_post",
     "/api/posts/delete" => "post/post/delete_post",
     "/api/posts/get" => "post/post/get_post_by_id",
+    "/api/toggle-follow" => "post/post/toggle_follow",
+    "/api/is-following" => "post/post/is_following",
     "/admin" => "post/post/admin",
     "/api/admin/update-post" => "post/post/admin_update_post",
     "/admin/posts" => "post/post/admin_posts",

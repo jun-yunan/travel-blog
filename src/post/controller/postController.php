@@ -900,4 +900,92 @@ class PostController extends Base
         }
         exit();
     }
+
+    public function toggle_follow(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn cần đăng nhập để theo dõi người dùng.'
+            ]);
+            exit();
+        }
+
+        // Đọc dữ liệu JSON từ request body
+        $input = file_get_contents('php://input');
+        $data = json_decode($input, true);
+
+        if (!isset($data['following_id']) || !is_numeric($data['following_id'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'ID người dùng cần theo dõi không hợp lệ.'
+            ]);
+            exit();
+        }
+
+        $follower_id = $_SESSION['user']['user_id'];
+        $following_id = (int)$data['following_id'];
+
+        $post_model = new PostModel();
+
+        try {
+            $result = $post_model->toggleFollow($follower_id, $following_id);
+
+            if ($result['status'] === 'success') {
+                echo json_encode($result);
+            } else {
+                echo json_encode($result);
+            }
+        } catch (\Exception $e) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Lỗi khi xử lý follow: ' . $e->getMessage()
+            ]);
+        }
+        exit();
+    }
+
+    public function is_following(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn cần đăng nhập để kiểm tra follow.'
+            ]);
+            exit();
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($data['follower_id']) || !isset($data['following_id']) || !is_numeric($data['follower_id']) || !is_numeric($data['following_id'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'ID người dùng không hợp lệ.'
+            ]);
+            exit();
+        }
+
+        $follower_id = (int)$data['follower_id'];
+        $following_id = (int)$data['following_id'];
+
+        $post_model = new PostModel();
+
+        try {
+            $result = $post_model->isFollowing($follower_id, $following_id);
+
+            echo json_encode($result);
+        } catch (\Exception $e) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Lỗi khi kiểm tra follow: ' . $e->getMessage()
+            ]);
+        }
+        exit();
+    }
 }

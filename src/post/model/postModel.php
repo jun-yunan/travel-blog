@@ -1374,4 +1374,138 @@ class PostModel extends Base
             return [];
         }
     }
+
+
+    public function toggleFollow($follower_id, $following_id)
+    {
+        try {
+            // Kiểm tra user tồn tại
+            $checkUserSql = "SELECT COUNT(*) as count FROM users WHERE user_id IN (?, ?)";
+            $userCount = $this->database->query($checkUserSql, [$follower_id, $following_id]);
+
+            if (!$userCount || !is_array($userCount) || empty($userCount) || $userCount['count'] != 2) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Một hoặc cả hai người dùng không tồn tại.'
+                ];
+            }
+
+            // Không cho phép follow chính mình
+            if ($follower_id == $following_id) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Bạn không thể theo dõi chính mình.'
+                ];
+            }
+
+            // Kiểm tra xem đã follow chưa
+            $checkFollowSql = "SELECT COUNT(*) as count FROM follows WHERE follower_id = ? AND following_id = ?";
+            $followCount = $this->database->query($checkFollowSql, [$follower_id, $following_id]);
+
+            if (!$followCount || !is_array($followCount) || empty($followCount)) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Không thể kiểm tra follow.'
+                ];
+            }
+
+            if ($followCount['count'] > 0) {
+                // Nếu đã follow, xóa follow (unfollow)
+                $deleteSql = "DELETE FROM follows WHERE follower_id = ? AND following_id = ?";
+                $this->database->query($deleteSql, [$follower_id, $following_id]);
+                return [
+                    'status' => 'success',
+                    'message' => 'Đã bỏ theo dõi.',
+                    'following' => false
+                ];
+            } else {
+                // Nếu chưa follow, thêm follow
+                $insertSql = "INSERT INTO follows (follower_id, following_id) VALUES (?, ?)";
+                $this->database->query($insertSql, [$follower_id, $following_id]);
+                return [
+                    'status' => 'success',
+                    'message' => 'Đã theo dõi thành công.',
+                    'following' => true
+                ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi xử lý follow: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    public function getFollowingList($follower_id, $limit = 10, $offset = 0)
+    {
+        try {
+            $sql = "SELECT u.user_id, u.username, u.full_name, u.profile_picture
+                    FROM follows f
+                    JOIN users u ON f.following_id = u.user_id
+                    WHERE f.follower_id = ?
+                    ORDER BY f.created_at DESC
+                    LIMIT ? OFFSET ?";
+            $followings = $this->database->query($sql, [$follower_id, $limit, $offset]);
+
+            if (!$followings || !is_array($followings)) {
+                return [];
+            }
+
+            return $followings;
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    public function isFollowing($follower_id, $following_id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as count FROM follows WHERE follower_id = ? AND following_id = ?";
+            $result = $this->database->query($sql, [$follower_id, $following_id]);
+
+            if (!$result || !is_array($result) || empty($result)) {
+                return [
+                    'status' => 'success',
+                    'following' => false
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'following' => $result['count'] > 0
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi kiểm tra follow: ' . $e->getMessage(),
+                'following' => false
+            ];
+        }
+    }
+
+    public function getFollowerCount($user_id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as follower_count FROM follows WHERE following_id = ?";
+            $result = $this->database->query($sql, [$user_id]);
+
+            if (!$result || !is_array($result) || empty($result)) {
+                return [
+                    'status' => 'success',
+                    'follower_count' => 0
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'follower_count' => (int)$result[0]['follower_count']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi lấy số người theo dõi: ' . $e->getMessage(),
+                'follower_count' => 0
+            ];
+        }
+    }
 }

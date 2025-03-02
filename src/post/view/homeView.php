@@ -108,10 +108,7 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-x-3">
-                            <!-- <div class="flex items-center gap-x-1 hover:bg-green-600 transition duration-500 text-green-500 hover:text-white border-[1.5px] border-green-500 py-[2px] px-3 cursor-pointer rounded-full">
-                                <i class="fa-solid fa-bookmark"></i>
-                                <p class="text-sm font-medium">Lưu bài</p>
-                            </div> -->
+
                             <?php
                             $isBookmarked = $post['bookmarked'] > 0 ? 'text-white bg-green-500' : 'text-green-500';
                             ?>
@@ -119,10 +116,19 @@
                                 <i class="fa-solid fa-bookmark"></i>
                                 <p class="text-sm font-medium">Lưu bài</p>
                             </div>
-                            <div class="flex items-center gap-x-1 hover:bg-sky-600 transition duration-500 text-sky-600 hover:text-white border-[1.5px] border-sky-600 py-[2px] px-3 cursor-pointer rounded-full">
+                            <!-- <div class="flex items-center gap-x-1 hover:bg-sky-600 transition duration-500 text-sky-600 hover:text-white border-[1.5px] border-sky-600 py-[2px] px-3 cursor-pointer rounded-full">
                                 <i class="fa-solid fa-plus "></i>
                                 <p class="text-sm font-medium ">Theo dõi</p>
-                            </div>
+                            </div> -->
+                            <?php if ($_SESSION['user']['user_id'] !== $post['user_id']): ?>
+                                <button
+                                    class="follow-btn flex items-center gap-x-1 hover:bg-sky-600 transition duration-500 text-sky-600 hover:text-white border-[1.5px] border-sky-600 py-[2px] px-3 cursor-pointer rounded-full"
+                                    data-user-id="<?php echo $post['user_id']; ?>"
+                                    data-following="<?php echo $post['following']; ?>">
+                                    <i class="fa-solid fa-plus "></i>
+                                    <p class="text-sm font-medium ">Theo dõi</p>
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -665,6 +671,108 @@
                         }).showToast();
                     });
             });
+        });
+
+
+        document.querySelectorAll('.follow-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = '<?php echo htmlspecialchars($_SESSION['user']['user_id']); ?>';
+                const followingId = this.getAttribute('data-user-id');
+
+                if (!userId) {
+                    Toastify({
+                        text: "Bạn cần đăng nhập để theo dõi người dùng.",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: '#ef4444',
+                        stopOnFocus: true
+                    }).showToast();
+                    return;
+                }
+
+                fetch('/api/toggle-follow', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': '<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>'
+                        },
+                        body: JSON.stringify({
+                            following_id: followingId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            if (data.following) {
+                                button.textContent = 'Bỏ theo dõi';
+                                button.classList.remove('text-blue-500', 'hover:bg-blue-600');
+                                button.classList.add('bg-blue-500', 'hover:bg-blue-600', 'text-white');
+                            } else {
+                                button.textContent = 'Theo dõi';
+                                button.classList.remove('bg-blue-500', 'hover:bg-blue-600', 'text-white');
+                                button.classList.add('text-blue-500', 'hover:bg-blue-600');
+                            }
+                            Toastify({
+                                text: data.message,
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: '#22c55e',
+                                stopOnFocus: true
+                            }).showToast();
+                        } else {
+                            Toastify({
+                                text: data.message || "Lỗi khi theo dõi người dùng.",
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: '#ef4444',
+                                stopOnFocus: true
+                            }).showToast();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Lỗi:', error);
+                        Toastify({
+                            text: "Có lỗi xảy ra khi theo dõi người dùng.",
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: '#ef4444',
+                            stopOnFocus: true
+                        }).showToast();
+                    });
+            });
+        });
+
+
+        document.querySelectorAll('.follow-btn').forEach(button => {
+            const userId = '<?php echo htmlspecialchars($_SESSION['user']['user_id']); ?>';
+            const followingId = button.getAttribute('data-user-id');
+
+            if (userId) {
+                fetch('/api/is-following', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': '<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>'
+                        },
+                        body: JSON.stringify({
+                            follower_id: userId,
+                            following_id: followingId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success' && data.following) {
+                            button.textContent = 'Bỏ theo dõi';
+                            button.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                            button.classList.add('bg-red-500', 'hover:bg-red-600');
+                        }
+                    })
+                    .catch(error => console.error('Lỗi khi kiểm tra follow:', error));
+            }
         });
     </script>
 </div>
