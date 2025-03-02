@@ -27,5 +27,5 @@ return [
     "/api/schedules/create" => "post/post/create_schedule",
     "/api/schedules/update" => "post/post/update_schedule",
     "/api/schedules/delete" => "post/post/delete_schedule",
-    // "/api/schedules/{schedule_id}" => "post/post/get_schedule",
+    "/api/schedules/{schedule_id}" => "post/post/get_schedule",
 ];
