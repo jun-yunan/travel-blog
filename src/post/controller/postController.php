@@ -30,8 +30,76 @@ class PostController extends Base
 
     public function saved(): void
     {
-        $data = ["title" => "Saved"];
-        $this->output->load("post/saved",  $data);
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            $_SESSION['toast'] = [
+                'message' => 'Bạn cần đăng nhập để xem bài viết đã lưu.',
+                'type' => 'error'
+            ];
+            header('Location: /login');
+            exit();
+        }
+
+        $user = $_SESSION['user'];
+        $post_model = new PostModel();
+
+        // Lấy danh sách bài viết đã lưu của user
+        $user_id = $user['user_id'];
+        $bookmarks = $post_model->getUserBookmarks($user_id, 10, 0); // Giới hạn 10 bookmarks, offset 0
+
+        $data = [
+            'title' => 'Bài viết đã lưu - ' . htmlspecialchars($user['full_name']),
+            'bookmarks' => $bookmarks
+        ];
+
+        $this->output->load('post/saved', $data);
+    }
+
+    public function toggle_bookmark(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn cần đăng nhập để lưu bài viết.'
+            ]);
+            exit();
+        }
+
+        // Đọc dữ liệu JSON từ request body
+        $input = file_get_contents('php://input');
+        $data = json_decode($input, true);
+
+        if (!isset($data['post_id']) || !is_numeric($data['post_id'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'ID bài viết không hợp lệ.'
+            ]);
+            exit();
+        }
+
+        $user_id = $_SESSION['user']['user_id'];
+        $post_id = (int)$data['post_id'];
+
+        $post_model = new PostModel();
+
+        try {
+            $result = $post_model->toggleBookmark($user_id, $post_id);
+
+            if ($result['status'] === 'success') {
+                echo json_encode($result);
+            } else {
+                echo json_encode($result);
+            }
+        } catch (\Exception $e) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Lỗi khi xử lý bookmark: ' . $e->getMessage()
+            ]);
+        }
+        exit();
     }
 
     public function detail(): void

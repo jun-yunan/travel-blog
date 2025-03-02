@@ -13,6 +13,7 @@ return [
     "/posts/create" => "post/post/create",
     "/schedule" => "post/post/schedule",
     "/saved" => "post/post/saved",
+    "/api/toggle-bookmark" => "post/post/toggle_bookmark",
     "/profile" => "user/user/profile",
     "/api/profile/update" => "user/user/update_profile",
     "/api/users/me" => "user/user/get_me",

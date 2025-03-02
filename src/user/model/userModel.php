@@ -62,7 +62,7 @@ class UserModel extends Base
     }
 
 
-    public function updateUserProfile($user_id, $full_name, $username, $email, $profile_picture = null)
+    public function updateUserProfile($user_id, $full_name, $username, $email, $profile_picture = null, $bio = null)
     {
         try {
             // Kiểm tra username không trùng lặp (trừ user hiện tại)
@@ -77,8 +77,8 @@ class UserModel extends Base
             }
 
             if (isset($profile_picture)) {
-                $sql = "UPDATE users SET full_name = ?, username = ?, email = ?, profile_picture = ? WHERE user_id = ?";
-                $params = [$full_name, $username, $email, $profile_picture, $user_id];
+                $sql = "UPDATE users SET full_name = ?, username = ?, email = ?, profile_picture = ?, bio = ? WHERE user_id = ?";
+                $params = [$full_name, $username, $email, $profile_picture, $bio, $user_id];
 
                 $result = $this->database->query($sql, $params);
 
@@ -87,8 +87,8 @@ class UserModel extends Base
                     'message' => 'Cập nhật hồ sơ thành công!'
                 ];
             } else {
-                $sql = "UPDATE users SET full_name = ?, username = ?, email = ? WHERE user_id = ?";
-                $params = [$full_name, $username, $email, $user_id];
+                $sql = "UPDATE users SET full_name = ?, username = ?, email = ?, bio = ? WHERE user_id = ?";
+                $params = [$full_name, $username, $email, $bio, $user_id];
                 $result = $this->database->query($sql, $params);
                 return [
                     'status' => 'success',

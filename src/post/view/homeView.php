@@ -97,16 +97,24 @@
                     <div class="h-[1px] w-full bg-gray-200"></div>
                     <div class="flex w-full items-center justify-between">
                         <div class="flex items-center gap-x-2">
-                            <div class="rounded-full overflow-hidden w-[48px] h-[48px] border">
-                                <img width="48" height="48" src="/assets/images/placeholder.jpg" alt="user" />
-                            </div>
+
+                            <!-- <img width="48" height="48" src="/assets/images/placeholder.jpg" alt="user" /> -->
+                            <img class="w-[54px] h-[54px] hover:opacity-70 cursor-pointer rounded-full object-cover" src="<?php echo isset($post['profile_picture']) ?  htmlspecialchars($post['profile_picture']) : '/assets/images/placeholder.jpg' ?>" alt="user" />
+
                             <div class="flex flex-col">
                                 <a class="text-base font-medium text-gray-800 hover:underline cursor-pointer"><?php echo htmlspecialchars($post['full_name']) ?></a>
                                 <p class="text-sm font-normal text-gray-500"><?php echo htmlspecialchars($formatted) ?></p>
                             </div>
                         </div>
                         <div class="flex items-center gap-x-3">
-                            <div class="flex items-center gap-x-1 hover:bg-green-600 transition duration-500 text-green-500 hover:text-white border-[1.5px] border-green-500 py-[2px] px-3 cursor-pointer rounded-full">
+                            <!-- <div class="flex items-center gap-x-1 hover:bg-green-600 transition duration-500 text-green-500 hover:text-white border-[1.5px] border-green-500 py-[2px] px-3 cursor-pointer rounded-full">
+                                <i class="fa-solid fa-bookmark"></i>
+                                <p class="text-sm font-medium">Lưu bài</p>
+                            </div> -->
+                            <?php
+                            $isBookmarked = $post['bookmarked'] > 0 ? 'text-white bg-green-500' : 'text-green-500';
+                            ?>
+                            <div id="bookmark_<?php echo $post['post_id']; ?>" class="flex items-center gap-x-1 hover:bg-green-600 <?php echo $isBookmarked ?> transition duration-500  hover:text-white border-[1.5px] border-green-500 py-[2px] px-3 cursor-pointer rounded-full bookmark-btn" data-post-id="<?php echo $post['post_id']; ?>">
                                 <i class="fa-solid fa-bookmark"></i>
                                 <p class="text-sm font-medium">Lưu bài</p>
                             </div>
@@ -231,7 +239,6 @@
     </main>
     <?php include "src/post/view/layouts/friends.php"; ?>
     <script>
-        // Mở dialog share khi nhấp vào nút "Share"
         document.querySelectorAll('.share-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const postId = this.getAttribute('data-post-id');
@@ -239,20 +246,17 @@
             });
         });
 
-        // Hàm mở dialog share
         function openShareDialog(postId) {
             document.getElementById(`dialog_share_${postId}`).classList.remove('hidden');
             document.getElementById(`dialog_share_${postId}`).classList.add('flex');
         }
 
-        // Hàm đóng dialog share
         function closeShareDialog(postId) {
             document.getElementById(`dialog_share_${postId}`).classList.add('hidden');
             document.getElementById(`dialog_share_${postId}`).classList.remove('flex');
         }
 
 
-        // Hàm sao chép liên kết
         function copyLink(postId) {
             const linkInput = document.getElementById(`postLink_${postId}`);
             navigator.clipboard.writeText(linkInput.value).then(() => {
@@ -278,7 +282,6 @@
         }
 
 
-        // Hàm xử lý share và gọi API
         function handleShare(postId, platform) {
             const userId = '<?php echo isset($_SESSION['user']['user_id']) ? $_SESSION['user']['user_id'] : 0; ?>';
             const postUrl = document.getElementById(`share_${postId}`).getAttribute('data-post-url');
@@ -292,10 +295,9 @@
                     backgroundColor: '#ef4444',
                     stopOnFocus: true
                 }).showToast();
-                return false; // Ngăn mở liên kết nếu chưa đăng nhập
+                return false;
             }
 
-            // Gọi API để lưu lượt share
             fetch('/api/toggle-share', {
                     method: 'POST',
                     headers: {
@@ -344,8 +346,84 @@
                     }).showToast();
                 });
 
-            return true; // Cho phép mở liên kết nếu API thành công
+            return true;
         }
+
+
+        // Xử lý sự kiện click vào nút "Lưu bài"
+        document.querySelectorAll('.bookmark-btn').forEach(button => {
+            button.addEventListener('click', async function() {
+                const postId = this.getAttribute('data-post-id');
+                const userId = '<?php echo isset($_SESSION['user']['user_id']) ? $_SESSION['user']['user_id'] : 0; ?>';
+
+                if (!userId) {
+                    Toastify({
+                        text: "Bạn cần đăng nhập để lưu bài viết.",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: '#ef4444',
+                        stopOnFocus: true
+                    }).showToast();
+                    return;
+                }
+
+                await fetch('/api/toggle-bookmark', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': '<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>'
+                        },
+                        body: JSON.stringify({
+                            post_id: postId,
+                            user_id: userId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const bookmarkButton = document.getElementById(`bookmark_${postId}`);
+                            if (data.bookmarked) {
+                                bookmarkButton.classList.remove('text-green-500');
+                                bookmarkButton.classList.add('text-white', 'bg-green-500');
+                                // bookmarkButton.querySelector('i').classList.add('fa-solid');
+                            } else {
+                                bookmarkButton.classList.remove('text-white', 'bg-green-500');
+                                bookmarkButton.classList.add('text-green-500');
+                                // bookmarkButton.querySelector('i').classList.remove('fa-solid');
+                            }
+                            Toastify({
+                                text: data.message,
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: '#22c55e',
+                                stopOnFocus: true
+                            }).showToast();
+                        } else {
+                            Toastify({
+                                text: data.message || "Lỗi khi lưu bài viết.",
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: '#ef4444',
+                                stopOnFocus: true
+                            }).showToast();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Lỗi:', error);
+                        Toastify({
+                            text: "Có lỗi xảy ra khi lưu bài viết.",
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: '#ef4444',
+                            stopOnFocus: true
+                        }).showToast();
+                    });
+            });
+        });
 
         document.querySelectorAll('.like-btn').forEach(button => {
             button.addEventListener('click', function() {
@@ -427,7 +505,6 @@
             });
         });
 
-        // Mở dialog comment khi nhấp vào nút "Comment"
         document.querySelectorAll('.comment-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const postId = this.getAttribute('data-post-id');
@@ -435,12 +512,10 @@
             });
         });
 
-        // Hàm mở dialog comment
         function openCommentDialog(postId) {
             document.getElementById(`dialog_comment_${postId}`).classList.remove('hidden');
             document.getElementById(`dialog_comment_${postId}`).classList.add('flex');
 
-            // Gọi API để lấy danh sách bình luận
             fetch(`/api/comments/get?post_id=${postId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -472,7 +547,6 @@
                 });
         }
 
-        // Hàm đóng dialog comment
         function closeCommentDialog(postId) {
             document.getElementById(`dialog_comment_${postId}`).classList.add('hidden');
             document.getElementById(`dialog_comment_${postId}`).classList.remove('flex');

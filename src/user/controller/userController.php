@@ -30,10 +30,23 @@ class UserController extends Base
             if ($result['status'] === 'success') {
                 $_SESSION['logged_in'] = true;
                 $_SESSION['user'] = $result['user'];
+
+
+                ini_set('session.cookie_lifetime', 86400); // 1 ngày
+                ini_set('session.gc_maxlifetime', 86400);  // 1 ngày
+
+
+                // Làm mới cookie session
+                if (!isset($_COOKIE[session_name()])) {
+                    setcookie(session_name(), session_id(), time() + 86400, '/');
+                }
+
+
                 $_SESSION['toast'] = [
                     'type' => 'success',
                     'message' => 'Đăng nhập thành công!'
                 ];
+
                 header('Location: /');
                 exit;
             } else {
@@ -41,7 +54,7 @@ class UserController extends Base
                     'type' => 'error',
                     'message' => $result['message']
                 ];
-                header('Location: /');
+                header('Location: /login');
                 exit;
             }
         }
@@ -131,12 +144,10 @@ class UserController extends Base
         $user = $_SESSION['user'];
         $user_model = new UserModel();
 
-        // Lấy thông tin chi tiết của user (nếu cần thêm từ database)
         $user_id = $user['user_id'];
         $user_info =  $user_model->getUserById($user_id);
 
-        // Lấy danh sách posts của user
-        $posts =  $user_model->getUserPosts($user_id, 10, 0); // Giới hạn 10 posts, offset 0
+        $posts =  $user_model->getUserPosts($user_id, 10, 0);
 
         $data = [
             'title' => 'Trang cá nhân - ' . htmlspecialchars($user['full_name']),
@@ -168,7 +179,8 @@ class UserController extends Base
             $full_name = trim($_POST['full_name'] ?? '');
             $username = trim($_POST['username'] ?? '');
             $email = trim($_POST['email'] ?? '');
-            $profile_picture = $_POST['profile_picture'] ?? null; // Có thể là Base64 hoặc đường dẫn
+            $bio = trim($_POST['bio'] ?? '');
+            $profile_picture = $_POST['profile_picture'] ?? null;
 
             if (empty($full_name) || empty($username) || empty($email)) {
                 echo json_encode([
@@ -178,15 +190,9 @@ class UserController extends Base
                 exit();
             }
 
-            $result =  $user_model->updateUserProfile($user_id, $full_name, $username, $email, $profile_picture);
+            $result =  $user_model->updateUserProfile($user_id, $full_name, $username, $email, $profile_picture, $bio);
 
             if ($result['status'] === 'success') {
-                // $_SESSION['user']['full_name'] = $full_name;
-                // $_SESSION['user']['username'] = $username;
-                // $_SESSION['user']['email'] = $email;
-                // if ($profile_picture && strpos($profile_picture, 'data:image') === 0) {
-                //     $_SESSION['user']['profile_picture'] = $profile_picture;
-                // }
 
                 echo json_encode([
                     'status' => 'success',

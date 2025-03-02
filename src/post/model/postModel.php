@@ -138,6 +138,9 @@ class PostModel extends Base
                 $isLikedResult = $this->isLikedByUser($post['user_id'], $post['post_id']);
                 $post['liked'] = $isLikedResult['liked'];
 
+                $isBookmarkedByUser = $this->isBookmarkedByUser($post['user_id'], $post['post_id']);
+                $post['bookmarked'] = $isBookmarkedByUser['bookmarked'];
+
                 $likeCountShared = $this->getShareCount($post['post_id']);
                 $post['share_count'] = $likeCountShared['share_count'];
             }
@@ -730,6 +733,197 @@ class PostModel extends Base
                 'status' => 'error',
                 'message' => 'Lỗi tìm kiếm: ' . $e->getMessage()
             ];
+        }
+    }
+
+
+    public function toggleBookmark($user_id, $post_id)
+    {
+        try {
+            // Kiểm tra bài post tồn tại và được publish
+            $checkPostSql = "SELECT COUNT(*) as count FROM posts WHERE post_id = ? AND status = 'published'";
+            $postCount = $this->database->query($checkPostSql, [$post_id]);
+
+            if (!$postCount || !is_array($postCount) || empty($postCount) || $postCount['count'] == 0) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Bài viết không tồn tại hoặc chưa được công khai.'
+                ];
+            }
+
+            // Kiểm tra user tồn tại
+            $checkUserSql = "SELECT COUNT(*) as count FROM users WHERE user_id = ?";
+            $userCount = $this->database->query($checkUserSql, [$user_id]);
+
+            if (!$userCount || !is_array($userCount) || empty($userCount) || $userCount['count'] == 0) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Người dùng không hợp lệ.'
+                ];
+            }
+
+            // Kiểm tra xem user đã bookmark bài post này chưa
+            $checkBookmarkSql = "SELECT COUNT(*) as count FROM post_bookmarks WHERE user_id = ? AND post_id = ?";
+            $bookmarkCount = $this->database->query($checkBookmarkSql, [$user_id, $post_id]);
+
+            if (!$bookmarkCount || !is_array($bookmarkCount) || empty($bookmarkCount)) {
+                return [
+                    'status' => 'error',
+                    'message' => 'Không thể kiểm tra bookmark.'
+                ];
+            }
+
+            if ($bookmarkCount['count'] > 0) {
+                // Nếu đã bookmark, xóa bookmark
+                $deleteSql = "DELETE FROM post_bookmarks WHERE user_id = ? AND post_id = ?";
+                $this->database->query($deleteSql, [$user_id, $post_id]);
+                return [
+                    'status' => 'success',
+                    'message' => 'Đã bỏ lưu bài viết.',
+                    'bookmarked' => false
+                ];
+            } else {
+                // Nếu chưa bookmark, thêm bookmark
+                $insertSql = "INSERT INTO post_bookmarks (user_id, post_id) VALUES (?, ?)";
+                $this->database->query($insertSql, [$user_id, $post_id]);
+                return [
+                    'status' => 'success',
+                    'message' => 'Đã lưu bài viết.',
+                    'bookmarked' => true
+                ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi xử lý bookmark: ' . $e->getMessage()
+            ];
+        }
+    }
+
+
+    public function getBookmarkCount($post_id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as bookmark_count FROM post_bookmarks WHERE post_id = ?";
+            $result = $this->database->query($sql, [$post_id]);
+
+            if (!$result || !is_array($result) || empty($result)) {
+                return [
+                    'status' => 'success',
+                    'bookmark_count' => 0
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'bookmark_count' => (int)$result['bookmark_count']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi lấy số lượt lưu: ' . $e->getMessage(),
+                'bookmark_count' => 0
+            ];
+        }
+    }
+
+
+    public function isBookmarkedByUser($user_id, $post_id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as count FROM post_bookmarks WHERE user_id = ? AND post_id = ?";
+            $result = $this->database->query($sql, [$user_id, $post_id]);
+
+            if (!$result || !is_array($result) || empty($result)) {
+                return [
+                    'status' => 'success',
+                    'bookmarked' => false
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'bookmarked' => $result['count'] > 0
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi kiểm tra bookmark: ' . $e->getMessage(),
+                'bookmarked' => false
+            ];
+        }
+    }
+
+    public function getCommentsCount($post_id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as comment_count FROM comments WHERE post_id = ?";
+            $result = $this->database->query($sql, [$post_id]);
+
+            if (!$result || !is_array($result) || empty($result)) {
+                return [
+                    'status' => 'success',
+                    'comment_count' => 0
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'comment_count' => (int)$result[0]['comment_count']
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi lấy số bình luận: ' . $e->getMessage(),
+                'comment_count' => 0
+            ];
+        }
+    }
+
+
+    public function getUserBookmarks($user_id, $limit = 10, $offset = 0)
+    {
+        try {
+            $sql = "SELECT p.*, u.username, u.full_name, u.profile_picture
+                    FROM posts p
+                    JOIN users u ON p.user_id = u.user_id
+                    JOIN post_bookmarks pb ON p.post_id = pb.post_id
+                    WHERE pb.user_id = ? AND p.status = 'published'
+                    ORDER BY pb.created_at DESC
+                    LIMIT ? OFFSET ?";
+            $result = $this->database->query($sql, [$user_id, $limit, $offset]);
+
+            $bookmarks = is_array($result) && !isset($result[0]) ? [$result] : $result;
+
+            if (!$bookmarks || !is_array($bookmarks)) {
+                return [];
+            }
+
+            foreach ($bookmarks as &$bookmark) {
+                $bookmark['like_count'] = $this->getLikeCount($bookmark['post_id'])['like_count'];
+                $bookmark['share_count'] = $this->getShareCount($bookmark['post_id'])['share_count'];
+                $bookmark['comment_count'] = $this->getCommentsCount($bookmark['post_id'])['comment_count'];
+
+                // Lấy tags
+                $tagSql = "SELECT t.tag_id, t.name, t.slug
+                          FROM tags t
+                          JOIN post_tags pt ON t.tag_id = pt.tag_id
+                          WHERE pt.post_id = ?";
+                $tags = $this->database->query($tagSql, [$bookmark['post_id']]);
+                $bookmark['tags'] = is_array($tags) ? $tags : [];
+
+                // Lấy categories
+                $categorySql = "SELECT c.category_id, c.name, c.slug
+                               FROM categories c
+                               JOIN post_categories pc ON c.category_id = pc.category_id
+                               WHERE pc.post_id = ?";
+                $categories = $this->database->query($categorySql, [$bookmark['post_id']]);
+                $bookmark['categories'] = is_array($categories) ? $categories : [];
+            }
+
+            return $bookmarks;
+        } catch (\Exception $e) {
+            return [];
         }
     }
 }
