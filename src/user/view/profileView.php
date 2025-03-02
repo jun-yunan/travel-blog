@@ -483,7 +483,7 @@
                         }).showToast();
                         closeEditProfileDialog();
 
-                        window.location.reload(); // Hoặc gọi API để lấy lại dữ liệu mới
+                        window.location.reload();
                     } else {
                         Toastify({
                             text: data.message,
