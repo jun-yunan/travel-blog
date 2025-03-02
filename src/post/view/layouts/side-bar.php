@@ -1,4 +1,4 @@
-<div class="w-[350px] h-[1500px] bg-white p-4 border border-black border-opacity-10 rounded-lg overflow-hidden relative flex flex-col space-y-4 shadow-md max-h-[2000px] overflow-y-auto scrollbar-custom">
+<div class="w-[350px]  h-[1500px] bg-white p-4 border border-black border-opacity-10 rounded-lg overflow-hidden  flex flex-col space-y-4 shadow-md max-h-[2000px] overflow-y-auto scrollbar-custom">
     <!-- Phần slider sự kiện -->
     <div class="h-[300px] w-full flex flex-col items-center mt-[0.5rem]">
         <!-- Slider Container -->
@@ -23,10 +23,61 @@
         </div>
     </div>
 
+    <!-- Ô tạo lịch trình
+    <button class="w-[300px] h-[50px] flex items-center justify-center border border-black border-opacity-10 rounded-lg cursor-pointer hover:bg-[#00A136] hover:text-white text-base font-semibold duration-500 transition">
+        <i class="fa-solid fa-calendar-days mr-2"></i> Tạo lịch trình riêng của bạn
+    </button> -->
+
     <!-- Ô tạo lịch trình -->
-    <div class="w-[300px] h-[50px] flex items-center justify-center border border-black border-opacity-10 rounded-lg cursor-pointer hover:bg-[#00A136] transition">
-        <img src="/assets/images/calendar-icon2.png" alt="Calendar Icon" class="w-6 h-6 mr-2">
-        <span class="text-gray-800 font-medium hover:text-white">Tạo lịch trình riêng của bạn</span>
+    <button
+        id="createScheduleBtn"
+        class="w-[300px] h-[50px] flex items-center justify-center border border-black border-opacity-10 rounded-lg cursor-pointer hover:bg-[#00A136] hover:text-white text-base font-semibold duration-500 transition">
+        <i class="fa-solid fa-calendar-days mr-2"></i> Tạo lịch trình riêng của bạn
+    </button>
+
+    <!-- Dialog tạo lịch trình -->
+    <div id="scheduleDialog" class="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center" onclick="closeScheduleDialog()">
+        <div class="bg-white p-6 rounded-lg w-[90%] max-w-md" onclick="event.stopPropagation()">
+            <h2 class="text-xl font-bold mb-4">Tạo lịch trình mới</h2>
+            <form id="scheduleForm" class="space-y-4">
+                <input type="hidden" id="user_id" name="user_id" value="<?php echo isset($_SESSION['user']) ? htmlspecialchars($_SESSION['user']['user_id']) : 0; ?>">
+                <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Tiêu đề</label>
+                    <input type="text" name="title" id="scheduleTitle" class="w-full border border-gray-300 rounded-md p-2" required>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Ngày bắt đầu</label>
+                    <input type="datetime-local" name="start_date" id="startDate" class="w-full border border-gray-300 rounded-md p-2" required>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Ngày kết thúc</label>
+                    <input type="datetime-local" name="end_date" id="endDate" class="w-full border border-gray-300 rounded-md p-2" required>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Địa điểm</label>
+                    <select name="location_id" id="locationId" class="w-full border border-gray-300 rounded-md p-2">
+                        <option value="">Chọn địa điểm</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Mô tả</label>
+                    <textarea name="description" id="description" class="w-full border border-gray-300 rounded-md p-2" rows="3"></textarea>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Trạng thái</label>
+                    <select name="status" id="status" class="w-full border border-gray-300 rounded-md p-2">
+                        <option value="pending">Chờ xử lý</option>
+                        <option value="ongoing">Đang thực hiện</option>
+                        <option value="completed">Hoàn thành</option>
+                        <option value="cancelled">Đã hủy</option>
+                    </select>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" onclick="closeScheduleDialog()" class="px-4 py-2 mr-2 bg-gray-300 rounded-md">Hủy</button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md">Lưu</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Danh sách bạn bè -->
@@ -239,6 +290,152 @@
         currentIndex = (currentIndex + 1) % slides.length;
         updateSlider(currentIndex);
     }, 3000);
+
+
+    document.getElementById('createScheduleBtn').addEventListener('click', function() {
+        openScheduleDialog();
+    });
+
+    function openScheduleDialog() {
+        document.getElementById('scheduleDialog').classList.remove('hidden');
+        document.getElementById('scheduleDialog').classList.add('flex');
+
+        const form = document.getElementById('scheduleForm');
+        form.reset(); // Reset form khi mở dialog
+    }
+
+    function closeScheduleDialog() {
+        document.getElementById('scheduleDialog').classList.add('hidden');
+        document.getElementById('scheduleDialog').classList.remove('flex');
+    }
+
+    document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const userId = document.getElementById('user_id').value || null;
+
+        if (!userId) {
+            Toastify({
+                text: "Vui lòng đăng nhập để tạo lịch trình.",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: '#ef4444',
+                stopOnFocus: true
+            }).showToast();
+            return;
+        }
+
+        const title = document.getElementById('scheduleTitle').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const locationId = document.getElementById('locationId').value;
+        const description = document.getElementById('description').value;
+        const status = document.getElementById('status').value;
+
+        const url = `/api/schedules/create`;
+        const method = 'POST';
+
+        const data = {
+            user_id: userId,
+            title: title,
+            start_date: startDate,
+            end_date: endDate,
+            location_id: locationId ? parseInt(locationId) : null,
+            description: description,
+            status: status
+        };
+
+        console.log(data);
+
+
+        fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': '<?php echo isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : ''; ?>'
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    title: title,
+                    start_date: startDate,
+                    end_date: endDate,
+                    location_id: locationId ? parseInt(locationId) : null,
+                    description: description,
+                    status: status
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Toastify({
+                        text: data.message,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: '#22c55e',
+                        stopOnFocus: true
+                    }).showToast();
+                    closeScheduleDialog();
+                    // window.location.href = '/schedule'; // Chuyển hướng về trang lịch trình
+                } else {
+                    Toastify({
+                        text: data.message,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: '#ef4444',
+                        stopOnFocus: true
+                    }).showToast();
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi:', error);
+                Toastify({
+                    text: "Có lỗi xảy ra khi tạo lịch trình.",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: '#ef4444',
+                    stopOnFocus: true
+                }).showToast();
+            });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/locations?limit=50&offset=0')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const locationSelect = document.getElementById('locationId');
+                    data.data.forEach(location => {
+                        const option = document.createElement('option');
+                        option.value = location.location_id;
+                        option.textContent = `${location.name} - ${location.city ? location.city + ', ' : ''}${location.country}`;
+                        locationSelect.appendChild(option);
+                    });
+                } else {
+                    Toastify({
+                        text: data.message,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: '#ef4444',
+                        stopOnFocus: true
+                    }).showToast();
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi:', error);
+                Toastify({
+                    text: "Không thể tải danh sách địa điểm.",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: '#ef4444',
+                    stopOnFocus: true
+                }).showToast();
+            });
+    });
 </script>
 
 <!-- CSS bổ sung cho thanh cuộn -->

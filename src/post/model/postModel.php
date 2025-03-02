@@ -1340,4 +1340,38 @@ class PostModel extends Base
             ];
         }
     }
+
+
+    public function getAllLocations($limit = 100, $offset = 0, $search = '')
+    {
+        try {
+            $sql = "SELECT location_id, name, country, city
+                    FROM locations
+                    WHERE 1=1";
+
+            $params = [];
+
+            if (!empty($search)) {
+                $sql .= " AND (name LIKE ? OR country LIKE ? OR city LIKE ?)";
+                $params[] = "%" . $search . "%";
+                $params[] = "%" . $search . "%";
+                $params[] = "%" . $search . "%";
+            }
+
+            $sql .= " ORDER BY name ASC
+                     LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+
+            $locations = $this->database->query($sql, $params);
+
+            if (!$locations || !is_array($locations)) {
+                return [];
+            }
+
+            return $locations;
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
 }

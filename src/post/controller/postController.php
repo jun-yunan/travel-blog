@@ -685,7 +685,7 @@ class PostController extends Base
         exit();
     }
 
-    public function get_schedule($schedule_id): void
+    public function get_schedule(): void
     {
         header('Content-Type: application/json');
 
@@ -697,6 +697,8 @@ class PostController extends Base
             ]);
             exit();
         }
+
+        $schedule_id = (int)($_GET['schedule_id'] ?? 0);
 
         $user_id = $_SESSION['user']['user_id'];
         $post_model = new PostModel();
@@ -858,6 +860,43 @@ class PostController extends Base
             ]);
         } else {
             echo json_encode($post);
+        }
+        exit();
+    }
+
+    public function get_locations(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        // if (!isset($_SESSION['user'])) {
+        //     echo json_encode([
+        //         'status' => 'error',
+        //         'message' => 'Bạn cần đăng nhập để truy cập API này.'
+        //     ]);
+        //     exit();
+        // }
+
+        $limit = (int)($_GET['limit'] ?? 10); // Số bản ghi mỗi trang, mặc định 10
+        $offset = (int)($_GET['offset'] ?? 0); // Vị trí bắt đầu, mặc định 0
+        $search = $_GET['search'] ?? ''; // Từ khóa tìm kiếm, mặc định rỗng
+
+        $post_model = new PostModel();
+
+        try {
+            $locations = $post_model->getAllLocations($limit, $offset, $search);
+
+            echo json_encode([
+                'status' => 'success',
+                'data' => $locations,
+                'message' => 'Lấy danh sách địa điểm thành công.'
+            ]);
+        } catch (\Exception $e) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Lỗi khi lấy danh sách địa điểm: ' . $e->getMessage(),
+                'data' => []
+            ]);
         }
         exit();
     }
