@@ -1,6 +1,7 @@
 <div class="w-full h-full flex">
     <?php include "src/post/view/layouts/side-bar.php"; ?>
     <?php
+    ini_set('memory_limit', '128M');
     $pathname = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $active_home = $pathname == '/' ? 'bg-green-600 text-white' : '';
     $active_saved = $pathname == '/saved' ? 'bg-green-600 text-white' : '';
