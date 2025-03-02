@@ -594,6 +594,25 @@ class PostModel extends Base
         }
     }
 
+    public function updatePost($post_id, $title, $content, $featured_image, $status)
+    {
+        try {
+            $sql = "UPDATE posts SET title = ?, content = ?, featured_image = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE post_id = ?";
+            $result = $this->database->query($sql, [$title, $content, $featured_image, $status, $post_id]);
+
+
+            return [
+                'status' => 'success',
+                'message' => 'Cập nhật bài viết thành công!'
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'Lỗi khi cập nhật bài viết: ' . $e->getMessage()
+            ];
+        }
+    }
+
     public function getPostBySlug($slug)
     {
         try {
@@ -1238,17 +1257,11 @@ class PostModel extends Base
             $sql = "DELETE FROM posts WHERE post_id = ?";
             $result = $this->database->query($sql, [$post_id]);
 
-            if ($result) {
-                return [
-                    'status' => 'success',
-                    'message' => 'Xóa bài viết thành công!'
-                ];
-            } else {
-                return [
-                    'status' => 'error',
-                    'message' => 'Xóa bài viết thất bại. Vui lòng kiểm tra quyền truy cập.'
-                ];
-            }
+
+            return [
+                'status' => 'success',
+                'message' => 'Xóa bài viết thành công!'
+            ];
         } catch (\Exception $e) {
             return [
                 'status' => 'error',
@@ -1264,17 +1277,11 @@ class PostModel extends Base
             $sql = "UPDATE posts SET status = ? WHERE post_id = ?";
             $result = $this->database->query($sql, [$status, $post_id]);
 
-            if ($result) {
-                return [
-                    'status' => 'success',
-                    'message' => 'Cập nhật trạng thái bài viết thành công!'
-                ];
-            } else {
-                return [
-                    'status' => 'error',
-                    'message' => 'Cập nhật trạng thái thất bại. Vui lòng kiểm tra quyền truy cập.'
-                ];
-            }
+
+            return [
+                'status' => 'success',
+                'message' => 'Cập nhật trạng thái bài viết thành công!'
+            ];
         } catch (\Exception $e) {
             return [
                 'status' => 'error',

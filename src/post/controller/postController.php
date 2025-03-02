@@ -55,6 +55,102 @@ class PostController extends Base
         $this->output->load('post/saved', $data);
     }
 
+
+    public function update_post(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn cần đăng nhập để cập nhật bài viết.'
+            ]);
+            exit();
+        }
+
+        $user_id = $_SESSION['user']['user_id'];
+        $post_model = new PostModel();
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($data['post_id']) || !isset($data['title']) || !isset($data['content']) || !isset($data['status'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Dữ liệu không hợp lệ. Vui lòng cung cấp ID bài viết, tiêu đề, nội dung và trạng thái.'
+            ]);
+            exit();
+        }
+
+        $post_id = (int)$data['post_id'];
+        $title = trim($data['title']);
+        $content = trim($data['content']);
+        $status = $data['status'];
+        $featured_image = $data['featured_image'] ?? null;
+
+        // Kiểm tra quyền: Chỉ tác giả hoặc admin được sửa
+        $post = $post_model->getPostById($post_id);
+        if ($post['status'] !== 'success' || ($post['data']['user_id'] !== $user_id)) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn không có quyền cập nhật bài viết này.'
+            ]);
+            exit();
+        }
+
+        $result = $post_model->updatePost($post_id, $title, $content, $featured_image, $status);
+
+        echo json_encode($result);
+        exit();
+    }
+
+
+    public function delete_post(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn cần đăng nhập để xóa bài viết.'
+            ]);
+            exit();
+        }
+
+        $user_id = $_SESSION['user']['user_id'];
+        $post_model = new PostModel();
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($data['post_id'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Dữ liệu không hợp lệ. Vui lòng cung cấp ID bài viết.'
+            ]);
+            exit();
+        }
+
+        $post_id = (int)$data['post_id'];
+
+        // Kiểm tra quyền: Chỉ tác giả hoặc admin được xóa
+        $post = $post_model->getPostById($post_id);
+        // var_dump($post);
+        // die();
+        if ($post['status'] !== 'success' || ($post['data']['user_id'] !== $user_id)) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn không có quyền xóa bài viết này.'
+            ]);
+            exit();
+        }
+
+        $result = $post_model->deletePost($post_id);
+
+        echo json_encode($result);
+        exit();
+    }
+
     public function toggle_bookmark(): void
     {
         header('Content-Type: application/json');
@@ -720,6 +816,36 @@ class PostController extends Base
             ]);
             exit();
         }
+
+        $post_model = new PostModel();
+        $post = $post_model->getPostById($post_id);
+
+        if ($post['status'] === 'success') {
+            echo json_encode([
+                'status' => 'success',
+                'data' => $post['data'],
+                'message' => 'Lấy thông tin bài viết thành công.'
+            ]);
+        } else {
+            echo json_encode($post);
+        }
+        exit();
+    }
+
+    public function get_post_by_id(): void
+    {
+        header('Content-Type: application/json');
+
+        session_start();
+        if (!isset($_SESSION['user'])) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Bạn không có quyền truy cập.'
+            ]);
+            exit();
+        }
+
+        $post_id = (int)($_GET['post_id'] ?? 0);
 
         $post_model = new PostModel();
         $post = $post_model->getPostById($post_id);
